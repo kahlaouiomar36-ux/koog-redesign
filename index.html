@@ -32,7 +32,7 @@
   --ease-in-out:cubic-bezier(.77,0,.175,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{font-size:clamp(13px,12.4px + .2vw,16px);scroll-behavior:smooth}
+html{font-size:clamp(13px,12.4px + .2vw,16px)}
 body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 h1,h2,h3,h4{margin:0;font-weight:normal;line-height:1}
 a{color:inherit;text-decoration:none}
@@ -59,7 +59,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .pill-nav .logo img{height:20px;display:block}
 .pill-nav .cta{border:1px solid #fff;border-radius:999px;padding:8px 18px;font-size:var(--text-xs);letter-spacing:var(--tracking-caps);text-transform:uppercase;transition:.25s}
 .pill-nav .cta:hover{background:var(--red);border-color:var(--red)}
-@media(max-width:720px){.pill-nav .links{display:none}}
+.nav-burger{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;align-items:center;justify-content:center;padding:6px}
+.nav-burger i{display:block;width:22px;height:2px;background:#fff;transition:transform .3s var(--ease-out),opacity .2s}
+.nav-burger.open i:nth-child(1){transform:translateY(3.5px) rotate(45deg)}
+.nav-burger.open i:nth-child(2){transform:translateY(-3.5px) rotate(-45deg)}
+.mobile-menu{position:fixed;inset:0;z-index:190000;background:rgba(6,6,6,.97);backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3.2vh,26px);padding:0 var(--pad);
+  clip-path:inset(0 0 100% 0);visibility:hidden;transition:clip-path .55s var(--ease-out),visibility 0s .55s}
+.mobile-menu.open{clip-path:inset(0);visibility:visible;transition:clip-path .55s var(--ease-out)}
+.mobile-menu a{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(2rem,9vw,3.4rem);letter-spacing:-.02em;color:#fff}
+.mobile-menu a:active{color:var(--red)}
+.mobile-menu .mm-cta{font-family:var(--font-body);font-weight:500;font-size:var(--text-sm);letter-spacing:var(--tracking-caps);text-transform:uppercase;border:1px solid #fff;border-radius:999px;padding:14px 26px;align-self:flex-start;margin-top:16px}
+@media(max-width:720px){.pill-nav .links{display:none}.pill-nav .cta{display:none}.nav-burger{display:flex}}
+@media(min-width:721px){.mobile-menu{display:none}}
+/* custom cursor */
+.has-cursor,.has-cursor a,.has-cursor button,.has-cursor .slide-thumb,.has-cursor .word-tab{cursor:none}
+#cursor-dot{position:fixed;top:0;left:0;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:var(--red);z-index:250000;pointer-events:none;will-change:transform}
+#cursor-ring{position:fixed;top:0;left:0;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:1px solid rgba(255,255,255,.6);z-index:250000;pointer-events:none;mix-blend-mode:difference;will-change:transform;transition:width .25s var(--ease-out),height .25s var(--ease-out),margin .25s var(--ease-out),border-color .25s}
+#cursor-ring.on{width:52px;height:52px;margin:-26px 0 0 -26px;border-color:var(--red)}
 
 /* ============================================================
    HERO — dark product slider (v5 anatomy, black+red skin)
@@ -112,8 +129,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .verb-slide .scene{flex-direction:row;align-items:center;justify-content:space-between;gap:clamp(24px,5vw,72px);padding:92px var(--pad) 21vh}
 .verb-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:clamp(16px,2.6vh,26px);position:relative;z-index:2;flex:0 1 42%;max-width:40ch}
 .verb-kicker{font-family:var(--font-accent);font-size:var(--text-sm);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,35,1,.75)}
-.verb{font-family:var(--font-display);font-weight:700;text-transform:uppercase;
-  font-size:clamp(3.4rem,9vw,7.6rem);line-height:.86;letter-spacing:-.03em;color:#fff}
+.verb{font-family:var(--font-display);font-weight:700;text-transform:uppercase;white-space:nowrap;
+  font-size:clamp(3rem,7.4vw,6.6rem);line-height:.9;letter-spacing:-.03em;color:#fff}
 .verb .dot{color:var(--red)}
 .verb-sub{max-width:42ch;color:var(--muted);font-size:var(--text-md);line-height:1.6}
 
@@ -312,7 +329,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
    WORKS (v5 full-width blocks)
    ============================================================ */
 .works{padding-bottom:6vh}
-.works .gallery-header{position:sticky;top:12vh;z-index:1;margin-bottom:16vh}
+.works .gallery-header{position:relative;z-index:1;margin-bottom:clamp(60px,12vh,150px)}
 .pg-gallery{display:flex;flex-direction:column;gap:22vh;position:relative;z-index:2}
 .pg-item{display:block;overflow:hidden}
 .pg-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.07)}
@@ -401,7 +418,17 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     <a class="nl" href="#team">Team</a>
   </div>
   <a class="cta" href="mailto:contact@koog.ma">Request a quote</a>
+  <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false"><i></i><i></i></button>
 </nav>
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a href="#services">Services</a>
+  <a href="#ailab">AI Lab</a>
+  <a href="#works">Work</a>
+  <a href="#method">Method</a>
+  <a href="#team">Team</a>
+  <a href="#contact">Contact</a>
+  <a class="mm-cta" href="mailto:contact@koog.ma">Request a quote</a>
+</div>
 
 <!-- ============ HERO ============ -->
 <header class="hero" id="top">
@@ -762,6 +789,31 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   addEventListener('scroll',u,{passive:true});setInterval(u,400);u();
 })();
 
+/* mobile menu */
+(function(){
+  var b=document.getElementById('navBurger'),m=document.getElementById('mobileMenu');
+  if(!b||!m)return;
+  function set(open){b.classList.toggle('open',open);m.classList.toggle('open',open);
+    b.setAttribute('aria-expanded',open);m.setAttribute('aria-hidden',!open);
+    document.body.style.overflow=open?'hidden':'';}
+  b.addEventListener('click',function(){set(!m.classList.contains('open'))});
+  m.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){set(false)})});
+  addEventListener('keydown',function(e){if(e.key==='Escape')set(false)});
+})();
+
+/* custom cursor (dot + trailing ring, fine pointers only) */
+(function(){
+  if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+  var dot=document.createElement('div'),ring=document.createElement('div');
+  dot.id='cursor-dot';ring.id='cursor-ring';document.body.appendChild(dot);document.body.appendChild(ring);
+  document.documentElement.classList.add('has-cursor');
+  var tx=0,ty=0,rx=0,ry=0;
+  addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY;dot.style.transform='translate('+tx+'px,'+ty+'px)';},{passive:true});
+  (function loop(){rx+=(tx-rx)*.18;ry+=(ty-ry)*.18;ring.style.transform='translate('+rx+'px,'+ry+'px)';requestAnimationFrame(loop);})();
+  document.addEventListener('mouseover',function(e){if(e.target.closest('a,button,.slide-thumb,.word-tab,.arc,.pg-item'))ring.classList.add('on');});
+  document.addEventListener('mouseout',function(e){if(e.target.closest('a,button,.slide-thumb,.word-tab,.arc,.pg-item'))ring.classList.remove('on');});
+})();
+
 /* hero slider */
 (function(){
   const slides=[...document.querySelectorAll('.slide')];
@@ -924,14 +976,8 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   st.textContent='.ch{display:inline-block;will-change:transform}.verb{overflow:hidden}.w{display:inline-block}';
   document.head.appendChild(st);
 
-  /* ---- Lenis inertia scroll ---- */
-  var lenis=null;
-  if(window.Lenis){try{
-    lenis=new Lenis({lerp:.09,smoothWheel:true,wheelMultiplier:1,duration:1,easing:function(t){return 1-Math.pow(1-t,3)}});
-    lenis.on('scroll',ScrollTrigger.update);
-    gsap.ticker.add(function(t){lenis.raf(t*1000)});
-    gsap.ticker.lagSmoothing(0);
-  }catch(e){}}
+  /* ---- native scroll (dropped Lenis: its smoothing read as "sticky/heavy") ---- */
+  gsap.ticker.lagSmoothing(0);
 
   /* ---- char splitter (keeps nested spans like the red dot) ---- */
   function split(el){
@@ -1074,9 +1120,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       scrollTrigger:{trigger:item,start:'top bottom',end:'bottom top',scrub:1.2}});
   });
 
-  /* ---- ring gallery entrance + center pop (scale from .4, never 0) ---- */
-  gsap.from('.ring-card',{scale:.4,opacity:0,stagger:.05,duration:.9,ease:'back.out(1.4)',immediateRender:false,
-    scrollTrigger:{trigger:'.ccap-section',start:'top 70%'}});
+  /* ---- ring gallery center pop (ring cards are now the 3D sphere) ---- */
   gsap.from('.ccap-center > *:not(.koogy-wrap)',{y:36,opacity:0,stagger:.1,duration:.8,ease:'expo.out',immediateRender:false,
     scrollTrigger:{trigger:'.ccap-section',start:'top 55%'}});
 

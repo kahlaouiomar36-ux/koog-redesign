@@ -757,9 +757,10 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     var tx=0,ty=0,cx=0,cy=0,baseY=0;
     var sec=document.querySelector('.ccap-section');
     if(sec&&fine) sec.addEventListener('mousemove',function(e){ ty=(e.clientX/innerWidth-.5)*0.8; tx=(e.clientY/innerHeight-.5)*0.5; });
-    function size(){ var w=holder.clientWidth||innerWidth,h=holder.clientHeight||innerHeight;
+    function size(){ var w=holder.clientWidth||innerWidth||0,h=holder.clientHeight||innerHeight||0;
+      if(w<2||h<2){ setTimeout(size,400); return; }   /* self-heal: WebViews report 0×0 at boot */
       renderer.setSize(w,h); cam.aspect=w/h; cam.updateProjectionMatrix(); }
-    size(); addEventListener('resize',size);
+    size(); addEventListener('resize',size); setInterval(size,1500);
     window.__koogRender=function(){ try{renderer.render(scene,cam)}catch(e){} };
     (function loop(){
       if(!rm) baseY+=0.0015;

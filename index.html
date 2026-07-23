@@ -250,6 +250,22 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 .kw-pos-4{margin-left:auto}
 @media(max-width:640px){.kw-pos-2{margin-left:14vw}.kw-pos-3{margin-left:34vw}}
 
+/* bilingual flip-wave — two columns of capabilities scrolling vertically (FR/EN) */
+.flip-band{position:relative;padding:clamp(70px,12vh,130px) var(--pad);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.flip-band .lead{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:clamp(30px,5vh,54px)}
+.flip-cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,6vw,90px);height:clamp(240px,38vh,400px);overflow:hidden;
+  -webkit-mask:linear-gradient(transparent,#000 16%,#000 84%,transparent);mask:linear-gradient(transparent,#000 16%,#000 84%,transparent)}
+.flip-col{overflow:hidden}
+.flip-track{display:flex;flex-direction:column;gap:clamp(12px,1.8vh,22px);will-change:transform;animation:flipscroll 28s linear infinite}
+.flip-col.rev .flip-track{animation-duration:34s;animation-direction:reverse}
+@media(prefers-reduced-motion:reduce){.flip-track{animation:none}}
+@keyframes flipscroll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+.flip-item{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(1.1rem,2.5vw,2rem);letter-spacing:-.01em;line-height:1.05;display:flex;align-items:baseline;gap:12px}
+.flip-item .en{color:#fff}
+.flip-item .fr{font-family:var(--font-body);font-weight:400;text-transform:none;font-size:clamp(.72rem,1.1vw,.9rem);letter-spacing:.02em;color:var(--muted)}
+.flip-item.hot .en{color:var(--red)}
+@media(max-width:560px){.flip-item .fr{display:none}}
+
 /* services archive (v3) */
 .archive{border-top:1px solid var(--line)}
 .arc{display:grid;grid-template-columns:64px 1fr minmax(0,44%);align-items:baseline;gap:18px;padding:clamp(15px,2.4vh,24px) 0;border-bottom:1px solid var(--line);transition:padding-left .3s cubic-bezier(.2,.8,.2,1)}
@@ -594,6 +610,58 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       <div class="kpi"><small>RDV</small><b>36</b></div>
       <div class="kpi"><small>Growth</small><b>+42%</b></div>
     </div></div></div><div class="pg-caption"><b>Ops dashboard</b><span>CONTROL_TOWER</span></div></a>
+  </div>
+</section>
+
+<!-- ============ BILINGUAL FLIP-WAVE ============ -->
+<section class="flip-band" id="capabilities-wave">
+  <div class="lead">
+    <span class="label">WHAT_WE_BUILD — FR / EN</span>
+    <span class="meta">ONE_TEAM — DEUX_LANGUES</span>
+  </div>
+  <div class="flip-cols">
+    <div class="flip-col">
+      <div class="flip-track">
+        <div class="flip-item"><span class="en">Web development</span><span class="fr">Développement web</span></div>
+        <div class="flip-item"><span class="en">Custom software</span><span class="fr">Logiciel sur-mesure</span></div>
+        <div class="flip-item hot"><span class="en">AI chatbots</span><span class="fr">Chatbots IA</span></div>
+        <div class="flip-item"><span class="en">Virtual assistants</span><span class="fr">Assistants virtuels</span></div>
+        <div class="flip-item"><span class="en">LLM integration</span><span class="fr">Intégration LLM</span></div>
+        <div class="flip-item"><span class="en">OCR &amp; vision</span><span class="fr">OCR &amp; vision</span></div>
+        <div class="flip-item"><span class="en">Cloud &amp; DevOps</span><span class="fr">Cloud &amp; DevOps</span></div>
+        <div class="flip-item"><span class="en">UI / UX design</span><span class="fr">Design UI / UX</span></div>
+        <!-- duplicate for seamless loop -->
+        <div class="flip-item"><span class="en">Web development</span><span class="fr">Développement web</span></div>
+        <div class="flip-item"><span class="en">Custom software</span><span class="fr">Logiciel sur-mesure</span></div>
+        <div class="flip-item hot"><span class="en">AI chatbots</span><span class="fr">Chatbots IA</span></div>
+        <div class="flip-item"><span class="en">Virtual assistants</span><span class="fr">Assistants virtuels</span></div>
+        <div class="flip-item"><span class="en">LLM integration</span><span class="fr">Intégration LLM</span></div>
+        <div class="flip-item"><span class="en">OCR &amp; vision</span><span class="fr">OCR &amp; vision</span></div>
+        <div class="flip-item"><span class="en">Cloud &amp; DevOps</span><span class="fr">Cloud &amp; DevOps</span></div>
+        <div class="flip-item"><span class="en">UI / UX design</span><span class="fr">Design UI / UX</span></div>
+      </div>
+    </div>
+    <div class="flip-col rev">
+      <div class="flip-track">
+        <div class="flip-item"><span class="en">Digital strategy</span><span class="fr">Stratégie digitale</span></div>
+        <div class="flip-item"><span class="en">SEO</span><span class="fr">Référencement</span></div>
+        <div class="flip-item"><span class="en">Meta &amp; Google Ads</span><span class="fr">Publicité Meta &amp; Google</span></div>
+        <div class="flip-item hot"><span class="en">Branding</span><span class="fr">Identité de marque</span></div>
+        <div class="flip-item"><span class="en">Content creation</span><span class="fr">Création de contenu</span></div>
+        <div class="flip-item"><span class="en">Motion design</span><span class="fr">Motion design</span></div>
+        <div class="flip-item"><span class="en">Automation</span><span class="fr">Automatisation</span></div>
+        <div class="flip-item"><span class="en">Growth</span><span class="fr">Croissance</span></div>
+        <!-- duplicate for seamless loop -->
+        <div class="flip-item"><span class="en">Digital strategy</span><span class="fr">Stratégie digitale</span></div>
+        <div class="flip-item"><span class="en">SEO</span><span class="fr">Référencement</span></div>
+        <div class="flip-item"><span class="en">Meta &amp; Google Ads</span><span class="fr">Publicité Meta &amp; Google</span></div>
+        <div class="flip-item hot"><span class="en">Branding</span><span class="fr">Identité de marque</span></div>
+        <div class="flip-item"><span class="en">Content creation</span><span class="fr">Création de contenu</span></div>
+        <div class="flip-item"><span class="en">Motion design</span><span class="fr">Motion design</span></div>
+        <div class="flip-item"><span class="en">Automation</span><span class="fr">Automatisation</span></div>
+        <div class="flip-item"><span class="en">Growth</span><span class="fr">Croissance</span></div>
+      </div>
+    </div>
   </div>
 </section>
 

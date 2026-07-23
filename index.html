@@ -697,46 +697,78 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   setInterval(()=>{t+=0.12;[...w.children].forEach((l,k)=>{l.style.height=(15+35*Math.max(0,Math.sin(t-k*0.28)))+'px'})},50);
 })();
 
-/* ring gallery */
-(function(){
-  const rotor=document.getElementById('ringRotor');if(!rotor)return;
-  const scenes=['scene-stay','scene-koogy','scene-vision','scene-compta','scene-ops','scene-logo'];
-  const N=12,R=Math.min(innerWidth,900)*0.36;
-  for(let k=0;k<N;k++){
-    const c=document.createElement('div');c.className='ring-card';
-    const deg=(360/N)*k,tilt=((k*47)%24)-12,s=scenes[k%scenes.length];
-    c.innerHTML=s==='scene-logo'
-      ?'<div class="mini scene scene-logo"><img src="assets/koog-logo.svg" alt=""></div>'
-      :'<div class="mini scene '+s+'"></div>';
-    c.style.transform='rotate('+deg+'deg) translateX('+R+'px) rotate('+(-deg+tilt)+'deg)';
-    rotor.appendChild(c);
-  }
-})();
+/* ring gallery — replaced by the real 3D ParticleSphere below (CSS cards disabled) */
 
-/* shader flare (three.js optional — page fine without it) */
+/* ==========================================================================
+   ParticleSphere — vanilla-Three port of the R3F immersive kit's design #1.
+   ~1300 additive particles on a Fibonacci sphere + orbiting product panels,
+   slow spin + cursor parallax. Koogy (DOM) floats in front. Dual-mode boot:
+   runs immediately if THREE is already global (inlined artifact), else lazy-
+   loads it from CDN (the GitHub build). Page is fine if it never loads.
+   ========================================================================== */
 (function(){
-  const s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-  s.onload=function(){try{
-    const holder=document.getElementById('sketch');
-    const renderer=new THREE.WebGLRenderer({antialias:false,alpha:true});
-    renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  function boot(){ if(window.__koogSphere)return; window.__koogSphere=1; try{ build(); }catch(e){} }
+  if(typeof THREE!=='undefined'){ boot(); }
+  else { var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload=boot; document.head.appendChild(s); }
+
+  function labelTexture(label){
+    var c=document.createElement('canvas'); c.width=256; c.height=320;
+    var x=c.getContext('2d');
+    var g=x.createLinearGradient(0,0,256,320); g.addColorStop(0,'#1c1c20'); g.addColorStop(1,'#0a0a0c');
+    x.fillStyle=g; x.fillRect(0,0,256,320);
+    x.strokeStyle='rgba(255,255,255,.16)'; x.lineWidth=2; x.strokeRect(7,7,242,306);
+    x.fillStyle='#FF2301'; x.fillRect(22,268,58,6);
+    x.fillStyle='#fff'; x.font='700 30px "Space Grotesk",Arial,sans-serif'; x.textBaseline='alphabetic';
+    x.fillText(label,22,258);
+    x.fillStyle='rgba(255,255,255,.5)'; x.font='500 13px monospace'; x.fillText('KOOG',22,40);
+    var t=new THREE.CanvasTexture(c); t.needsUpdate=true; return t;
+  }
+
+  function build(){
+    var holder=document.getElementById('sketch'); if(!holder)return;
+    var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));
     holder.appendChild(renderer.domElement);
-    const scene=new THREE.Scene(),cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-    const uniforms={u_time:{value:0},u_res:{value:new THREE.Vector2(1,1)}};
-    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms,fragmentShader:
-      'precision mediump float;uniform float u_time;uniform vec2 u_res;'+
-      'void main(){vec2 uv=gl_FragCoord.xy/u_res;float v=0.0;'+
-      'v+=0.04/abs(uv.y-0.5+0.16*sin(uv.x*4.0+u_time*0.3));'+
-      'v+=0.025/abs(uv.y-0.45+0.1*sin(uv.x*7.0-u_time*0.2));'+
-      'v*=0.3+0.2*sin(u_time*0.18);'+
-      'gl_FragColor=vec4(vec3(v*0.45),1.0);}'})));
-    function size(){const w=holder.clientWidth||innerWidth,h=holder.clientHeight||innerHeight;
-      renderer.setSize(w,h);uniforms.u_res.value.set(w*renderer.getPixelRatio(),h*renderer.getPixelRatio())}
-    size();addEventListener('resize',size);
-    let t=0;(function loop(){t+=.033;uniforms.u_time.value=t;try{renderer.render(scene,cam)}catch(e){}setTimeout(loop,33)})();
-  }catch(e){}};
-  document.head.appendChild(s);
+    var scene=new THREE.Scene();
+    var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,23);
+    var group=new THREE.Group(); scene.add(group);
+
+    /* particles — Fibonacci sphere with radius jitter */
+    var N=1300, R=9, JIT=4.4, pos=new Float32Array(N*3);
+    for(var i=0;i<N;i++){
+      var phi=Math.acos(-1+(2*i)/N), theta=Math.sqrt(N*Math.PI)*phi, r=R+(Math.random()-0.5)*JIT;
+      pos[i*3]=r*Math.cos(theta)*Math.sin(phi); pos[i*3+1]=r*Math.cos(phi); pos[i*3+2]=r*Math.sin(theta)*Math.sin(phi);
+    }
+    var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    group.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.06,sizeAttenuation:true,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+    /* orbiting product panels facing outward */
+    var labels=['STAY','KOOGY','VISION','COMPTA','OPS'], M=10, IR=9, IW=1.7, IH=2.1;
+    for(var j=0;j<M;j++){
+      var a=(j/M)*Math.PI*2, px=IR*Math.cos(a), pz=IR*Math.sin(a), p=new THREE.Vector3(px,0,pz);
+      var mesh=new THREE.Mesh(new THREE.PlaneGeometry(IW,IH),
+        new THREE.MeshBasicMaterial({map:labelTexture(labels[j%labels.length]),transparent:true,side:THREE.DoubleSide}));
+      mesh.position.copy(p); mesh.lookAt(p.clone().multiplyScalar(2)); group.add(mesh);
+    }
+
+    var rm=matchMedia('(prefers-reduced-motion: reduce)').matches, fine=matchMedia('(hover:hover)').matches;
+    var tx=0,ty=0,cx=0,cy=0,baseY=0;
+    var sec=document.querySelector('.ccap-section');
+    if(sec&&fine) sec.addEventListener('mousemove',function(e){ ty=(e.clientX/innerWidth-.5)*0.8; tx=(e.clientY/innerHeight-.5)*0.5; });
+    function size(){ var w=holder.clientWidth||innerWidth,h=holder.clientHeight||innerHeight;
+      renderer.setSize(w,h); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+    size(); addEventListener('resize',size);
+    window.__koogRender=function(){ try{renderer.render(scene,cam)}catch(e){} };
+    (function loop(){
+      if(!rm) baseY+=0.0015;
+      cy+=(ty-cy)*0.05; cx+=(tx-cx)*0.05;
+      group.rotation.y=baseY+cy; group.rotation.x=cx;
+      try{renderer.render(scene,cam)}catch(e){}
+      requestAnimationFrame(loop);
+    })();
+  }
 })();
 
 /* reveals + scribble draw + gallery parallax — plain scroll listeners */

@@ -837,14 +837,15 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   function build(){
     var holder=document.getElementById('sketch'); if(!holder)return;
     var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+    var mobile=innerWidth<700||matchMedia('(pointer:coarse)').matches;   /* lighter on phones — real GPUs are weaker than this test env */
+    renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.2:1.5));
     holder.appendChild(renderer.domElement);
     var scene=new THREE.Scene();
     var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,23);
     var group=new THREE.Group(); scene.add(group);
 
     /* particles — Fibonacci sphere with radius jitter */
-    var N=1300, R=9, JIT=4.4, pos=new Float32Array(N*3);
+    var N=mobile?620:1300, R=9, JIT=4.4, pos=new Float32Array(N*3);
     for(var i=0;i<N;i++){
       var phi=Math.acos(-1+(2*i)/N), theta=Math.sqrt(N*Math.PI)*phi, r=R+(Math.random()-0.5)*JIT;
       pos[i*3]=r*Math.cos(theta)*Math.sin(phi); pos[i*3+1]=r*Math.cos(phi); pos[i*3+2]=r*Math.sin(theta)*Math.sin(phi);
@@ -853,7 +854,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     group.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.06,sizeAttenuation:true,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})));
 
     /* orbiting product panels facing outward */
-    var labels=['STAY','KOOGY','VISION','COMPTA','OPS'], M=10, IR=9, IW=1.7, IH=2.1;
+    var labels=['STAY','KOOGY','VISION','COMPTA','OPS'], M=mobile?6:10, IR=9, IW=1.7, IH=2.1;
     for(var j=0;j<M;j++){
       var a=(j/M)*Math.PI*2, px=IR*Math.cos(a), pz=IR*Math.sin(a), p=new THREE.Vector3(px,0,pz);
       var mesh=new THREE.Mesh(new THREE.PlaneGeometry(IW,IH),

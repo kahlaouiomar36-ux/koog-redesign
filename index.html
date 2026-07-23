@@ -120,10 +120,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .viz-tag{position:absolute;right:16px;bottom:14px;z-index:5;font-family:var(--font-accent);font-size:11px;
   letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
 .viz-auto .viz-tag{top:16px;bottom:auto;right:80px}
+@media(max-width:980px){.svc-left{display:none}}
 @media(max-width:880px){
-  .verb-slide .scene{flex-direction:column;align-items:flex-start;justify-content:center;gap:clamp(20px,3vh,30px);padding:100px var(--pad) 24vh}
+  .verb-slide .scene{flex-direction:column;align-items:flex-start;justify-content:center;gap:clamp(18px,2.6vh,26px);padding:104px var(--pad) 26vh}
   .verb-wrap{flex:none;max-width:100%}
-  .viz{flex:none;width:100%;height:min(34vh,300px)}
+  .viz{flex:none;width:100%;height:min(30vh,260px)}
 }
 @media(max-width:560px){.viz{display:none}}
 

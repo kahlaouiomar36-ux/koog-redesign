@@ -233,6 +233,23 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 .statement .every svg{position:absolute;left:-2%;bottom:-9px;width:104%;height:14px;overflow:visible}
 .statement .meta{display:block;margin-top:40px}
 
+/* keyword field — scattered service terms interleaved with giant K O O G letters */
+.kw-field{position:relative;padding:clamp(80px,14vh,150px) var(--pad) clamp(90px,16vh,170px);overflow:hidden}
+.kw-content{position:relative;z-index:2}
+.kw-group{display:flex;flex-direction:column;margin-bottom:clamp(48px,8vh,90px)}
+.kw-el{white-space:nowrap;text-transform:uppercase;opacity:.55;font-size:clamp(12px,1.3vw,15px);letter-spacing:.06em;color:#fff;mix-blend-mode:difference;line-height:1.7}
+.kw-el .fr{opacity:.6;text-transform:none;letter-spacing:.02em}
+.kw-xl{font-family:var(--font-display);font-weight:700;font-size:clamp(6rem,26vw,21rem);line-height:.86;letter-spacing:-.04em;color:#fff;mix-blend-mode:difference}
+.kw-xl.outline{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.55)}
+.kw-el.kw-type{opacity:1;font-family:var(--font-accent);color:var(--red);letter-spacing:.1em}
+.kw-el.kw-type .cur{display:inline-block;animation:kwblink 1s steps(1) infinite}
+@keyframes kwblink{50%{opacity:0}}
+.kw-pos-1{margin-left:0}
+.kw-pos-2{margin-left:26vw}
+.kw-pos-3{margin-left:62vw}
+.kw-pos-4{margin-left:auto}
+@media(max-width:640px){.kw-pos-2{margin-left:14vw}.kw-pos-3{margin-left:34vw}}
+
 /* services archive (v3) */
 .archive{border-top:1px solid var(--line)}
 .arc{display:grid;grid-template-columns:64px 1fr minmax(0,44%);align-items:baseline;gap:18px;padding:clamp(15px,2.4vh,24px) 0;border-bottom:1px solid var(--line);transition:padding-left .3s cubic-bezier(.2,.8,.2,1)}
@@ -481,6 +498,24 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     </span>
   </p>
   <span class="meta"><b>1</b>_TEAM — <b>1</b>_POINT_OF_CONTACT — <b>0</b>_HAND-OFFS</span>
+</section>
+
+<!-- ============ KEYWORD FIELD (spells K O O G) ============ -->
+<section class="kw-field" id="expertise-cloud">
+  <div class="kw-content">
+    <div class="kw-group reveal"><div class="kw-el kw-pos-4">Développement web <span class="fr">— web development</span></div><div class="kw-el kw-pos-4">Applications mobiles</div><div class="kw-el kw-pos-4">Digital engineering</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-1">Chatbots IA</div><div class="kw-el kw-pos-1">Assistants virtuels</div><div class="kw-el kw-pos-1">Intégration LLM</div><div class="kw-el kw-pos-1">Automatisation</div></div>
+    <div class="kw-group reveal"><div class="kw-xl kw-pos-1">K</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-1">Système de marque en construction</div><div class="kw-el kw-type kw-pos-1"><span class="cur">█</span></div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-2">OCR &amp; biométrie</div><div class="kw-el kw-pos-2">Computer vision</div><div class="kw-el kw-pos-2">RAG &amp; bases de connaissances</div></div>
+    <div class="kw-group reveal"><div class="kw-xl outline kw-pos-3">O</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-3">SEO &amp; contenu</div><div class="kw-el kw-pos-3">Meta &amp; Google Ads</div><div class="kw-el kw-pos-3">Stratégie digitale</div><div class="kw-el kw-pos-3">Growth</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-1">Pipeline IA en cours d'exécution</div><div class="kw-el kw-type kw-pos-1"><span class="cur">█</span></div></div>
+    <div class="kw-group reveal"><div class="kw-xl kw-pos-2">O</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-2">UI / UX design</div><div class="kw-el kw-pos-2">Design system</div><div class="kw-el kw-pos-2">Cloud &amp; DevOps</div><div class="kw-el kw-pos-2">Branding</div></div>
+    <div class="kw-group reveal"><div class="kw-xl outline kw-pos-3">G</div></div>
+    <div class="kw-group reveal"><div class="kw-el kw-pos-4">Motion design</div><div class="kw-el kw-pos-4">Création de contenu</div><div class="kw-el kw-pos-4">Ingénierie digitale</div></div>
+  </div>
 </section>
 
 <!-- ============ SERVICES ============ -->

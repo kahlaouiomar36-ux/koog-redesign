@@ -257,9 +257,16 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 .ring-card .card-ui{transform:scale(.34);transform-origin:center}
 .scene-logo{background:#101214;display:flex;align-items:center;justify-content:center}
 .scene-logo img{width:58%}
-.ccap-center{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;pointer-events:none}
-.ccap-center .giant{font-family:var(--font-accent);font-weight:700;font-size:clamp(2.2rem,7vw,5.5rem);text-transform:uppercase}
+.ccap-center{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;pointer-events:none}
+.ccap-center .giant{font-family:var(--font-accent);font-weight:700;font-size:clamp(1.5rem,4vw,2.8rem);text-transform:uppercase}
 .ccap-center .giant em{font-style:normal;color:var(--red)}
+.koogy-wrap{will-change:transform;display:block}
+.koogy{width:clamp(180px,23vw,320px);height:auto;display:block;
+  filter:drop-shadow(0 34px 54px rgba(0,0,0,.65)) drop-shadow(0 0 46px rgba(255,35,1,.16));
+  animation:koogybob 5.5s ease-in-out infinite;will-change:transform}
+@keyframes koogybob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-18px) rotate(1.6deg)}}
+.koogy-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-42%);width:min(50vw,520px);height:min(50vw,520px);
+  border-radius:50%;background:radial-gradient(circle,rgba(255,35,1,.16),transparent 62%);z-index:1;pointer-events:none;filter:blur(8px)}
 .service-tags{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
 .service-tags span{font-size:var(--text-xs);letter-spacing:.08em;color:var(--muted)}
 .meta-band{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);margin:0 var(--pad);padding:14px 0 0}
@@ -498,15 +505,17 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   <div id="sketch"></div>
   <div class="ccap-side-fade ccap-side-fade-left"></div>
   <div class="ccap-side-fade ccap-side-fade-right"></div>
+  <div class="koogy-glow" aria-hidden="true"></div>
   <div class="ring-stage"><div class="ring-rotor" id="ringRotor"></div></div>
   <div class="ccap-center">
-    <div class="label">AI_LAB — CORE_CAPABILITIES</div>
-    <div class="giant">Applied<br>Intelligence<em>.</em></div>
+    <div class="label">AI_LAB — MEET KOOGY</div>
+    <div class="koogy-wrap" id="koogyWrap"><img class="koogy" id="koogy" src="assets/koogy.png" alt="Koogy — KOOG's AI assistant" width="794" height="875"></div>
+    <div class="giant">Applied Intelligence<em>.</em></div>
     <div class="service-tags">
-      <span>( Chatbots &amp; assistants )</span>
-      <span>( RAG &amp; LLM )</span>
+      <span>( Chatbots &amp; RAG )</span>
       <span>( OCR &amp; vision )</span>
-      <span>( Automation )</span>
+      <span>( Assistants 24/7 )</span>
+      <span>( FR / EN )</span>
     </div>
   </div>
 </section>
@@ -919,8 +928,23 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   /* ---- ring gallery entrance + center pop ---- */
   gsap.from('.ring-card',{scale:0,opacity:0,stagger:.05,duration:1,ease:'back.out(1.4)',immediateRender:false,
     scrollTrigger:{trigger:'.ccap-section',start:'top 70%'}});
-  gsap.from('.ccap-center > *',{y:40,opacity:0,stagger:.12,duration:1,ease:'power3.out',immediateRender:false,
+  gsap.from('.ccap-center > *:not(.koogy-wrap)',{y:40,opacity:0,stagger:.12,duration:1,ease:'power3.out',immediateRender:false,
     scrollTrigger:{trigger:'.ccap-section',start:'top 55%'}});
+
+  /* ---- Koogy: entrance + glow + cursor follow ---- */
+  var koogyWrap=document.getElementById('koogyWrap'),koogyGlow=document.querySelector('.koogy-glow');
+  if(koogyWrap){
+    gsap.from(koogyWrap,{y:80,scale:.7,opacity:0,duration:1.2,ease:'back.out(1.5)',immediateRender:false,
+      scrollTrigger:{trigger:'.ccap-section',start:'top 60%'}});
+    if(koogyGlow)gsap.fromTo(koogyGlow,{scale:.4,opacity:0},{scale:1,opacity:1,duration:1.4,ease:'power2.out',
+      scrollTrigger:{trigger:'.ccap-section',start:'top 60%'}});
+    var ccap=document.querySelector('.ccap-section');
+    ccap.addEventListener('mousemove',function(e){
+      var gx=e.clientX/innerWidth-.5,gy=e.clientY/innerHeight-.5;
+      gsap.to(koogyWrap,{x:gx*54,y:gy*38,duration:1,ease:'power2.out',overwrite:'auto'});
+      gsap.to(koogyGlow,{x:gx*30,y:gy*20,duration:1.2,ease:'power2.out',overwrite:'auto'});
+    });
+  }
 
   /* ---- CTA giant letters ---- */
   var cta=document.getElementById('ctaTitle');

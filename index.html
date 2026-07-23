@@ -27,6 +27,9 @@
   --tracking-meta:.12em;
   --tracking-caps:.18em;
   --pad:clamp(18px,3vw,44px);
+  /* Emil-grade easing: built-ins are too weak */
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-in-out:cubic-bezier(.77,0,.175,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:clamp(13px,12.4px + .2vw,16px);scroll-behavior:smooth}
@@ -63,7 +66,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
    ============================================================ */
 .hero{position:relative;height:100svh;overflow:hidden}
 .slides{position:absolute;inset:0}
-.slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .7s ease}
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;filter:blur(7px);transition:opacity .6s var(--ease-out),filter .6s var(--ease-out)}
+.slide.active{filter:blur(0)}
 .slide.active{opacity:1;visibility:visible}
 .scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 /* dark moody scene fields, one per product */
@@ -320,7 +324,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   stroke-dasharray:1600;stroke-dashoffset:1600;transition:stroke-dashoffset 1.4s cubic-bezier(.5,0,.2,1) .2s}
 .cta h2.draw svg path{stroke-dashoffset:0}
 .actions{display:flex;gap:14px;flex-wrap:wrap}
-.btn{display:inline-block;padding:15px 32px;border-radius:999px;font-size:var(--text-xs);letter-spacing:var(--tracking-caps);text-transform:uppercase;font-weight:500;border:1px solid #0a0a0a;color:#0a0a0a;transition:.25s}
+.btn{display:inline-block;padding:15px 32px;border-radius:999px;font-size:var(--text-xs);letter-spacing:var(--tracking-caps);text-transform:uppercase;font-weight:500;border:1px solid #0a0a0a;color:#0a0a0a;transition:background .3s var(--ease-out),border-color .3s var(--ease-out),color .3s var(--ease-out)}
 .btn.solid{background:#0a0a0a;color:#fff}
 .btn:hover{background:var(--red);border-color:var(--red);color:#fff}
 
@@ -806,11 +810,11 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   /* ---- hero verb + copy choreography ---- */
   function animVerb(slide){
     var chs=split(slide.querySelector('.verb'));
-    if(chs.length)gsap.fromTo(chs,{yPercent:112,opacity:0},{yPercent:0,opacity:1,duration:.85,stagger:.032,ease:'power3.out'});
+    if(chs.length)gsap.fromTo(chs,{yPercent:112,opacity:0},{yPercent:0,opacity:1,duration:.8,stagger:.03,ease:'expo.out'});
     var rest=[slide.querySelector('.verb-kicker'),slide.querySelector('.verb-sub'),slide.querySelector('.verb-cta')];
-    gsap.fromTo(rest,{y:26,opacity:0},{y:0,opacity:1,duration:.8,stagger:.09,delay:.2,ease:'power3.out'});
+    gsap.fromTo(rest,{y:26,opacity:0},{y:0,opacity:1,duration:.75,stagger:.08,delay:.18,ease:'expo.out'});
     var viz=slide.querySelector('.viz');
-    if(viz)gsap.fromTo(viz,{y:34,opacity:0},{y:0,opacity:1,duration:.9,delay:.15,ease:'power3.out'});
+    if(viz)gsap.fromTo(viz,{y:34,opacity:0},{y:0,opacity:1,duration:.85,delay:.12,ease:'expo.out'});
   }
 
   /* ---- the narrative: each scene DEMONSTRATES its verb ---- */
@@ -885,7 +889,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   gsap.utils.toArray('.display').forEach(function(h){
     h.classList.remove('reveal');h.classList.add('in');
     var chs=split(h);
-    gsap.from(chs,{yPercent:112,opacity:0,duration:.8,stagger:.022,ease:'power3.out',immediateRender:false,
+    gsap.from(chs,{yPercent:112,opacity:0,duration:.75,stagger:.02,ease:'expo.out',immediateRender:false,
       scrollTrigger:{trigger:h,start:'top 85%'}});
   });
 
@@ -913,7 +917,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     var wrap=document.querySelector(p[0]);if(!wrap)return;
     var items=wrap.querySelectorAll(p[1]);
     items.forEach(function(it){it.classList.remove('reveal');it.classList.add('in')});
-    gsap.from(items,{y:44,opacity:0,duration:.7,stagger:.06,ease:'power3.out',immediateRender:false,
+    gsap.from(items,{y:40,opacity:0,duration:.65,stagger:.055,ease:'expo.out',immediateRender:false,
       scrollTrigger:{trigger:wrap,start:'top 85%'}});
   });
 
@@ -925,10 +929,10 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       scrollTrigger:{trigger:item,start:'top bottom',end:'bottom top',scrub:1.2}});
   });
 
-  /* ---- ring gallery entrance + center pop ---- */
-  gsap.from('.ring-card',{scale:0,opacity:0,stagger:.05,duration:1,ease:'back.out(1.4)',immediateRender:false,
+  /* ---- ring gallery entrance + center pop (scale from .4, never 0) ---- */
+  gsap.from('.ring-card',{scale:.4,opacity:0,stagger:.05,duration:.9,ease:'back.out(1.4)',immediateRender:false,
     scrollTrigger:{trigger:'.ccap-section',start:'top 70%'}});
-  gsap.from('.ccap-center > *:not(.koogy-wrap)',{y:40,opacity:0,stagger:.12,duration:1,ease:'power3.out',immediateRender:false,
+  gsap.from('.ccap-center > *:not(.koogy-wrap)',{y:36,opacity:0,stagger:.1,duration:.8,ease:'expo.out',immediateRender:false,
     scrollTrigger:{trigger:'.ccap-section',start:'top 55%'}});
 
   /* ---- Koogy: entrance + glow + cursor follow ---- */
@@ -938,29 +942,38 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       scrollTrigger:{trigger:'.ccap-section',start:'top 60%'}});
     if(koogyGlow)gsap.fromTo(koogyGlow,{scale:.4,opacity:0},{scale:1,opacity:1,duration:1.4,ease:'power2.out',
       scrollTrigger:{trigger:'.ccap-section',start:'top 60%'}});
-    var ccap=document.querySelector('.ccap-section');
-    ccap.addEventListener('mousemove',function(e){
-      var gx=e.clientX/innerWidth-.5,gy=e.clientY/innerHeight-.5;
-      gsap.to(koogyWrap,{x:gx*54,y:gy*38,duration:1,ease:'power2.out',overwrite:'auto'});
-      gsap.to(koogyGlow,{x:gx*30,y:gy*20,duration:1.2,ease:'power2.out',overwrite:'auto'});
-    });
+    if(fineHover){
+      var ccap=document.querySelector('.ccap-section');
+      ccap.addEventListener('mousemove',function(e){
+        var gx=e.clientX/innerWidth-.5,gy=e.clientY/innerHeight-.5;
+        /* spring: keeps velocity when the cursor reverses — feels alive, not mechanical */
+        gsap.to(koogyWrap,{x:gx*54,y:gy*38,duration:.9,ease:'power3.out',overwrite:'auto'});
+        gsap.to(koogyGlow,{x:gx*30,y:gy*20,duration:1.1,ease:'power3.out',overwrite:'auto'});
+      });
+    }
   }
 
   /* ---- CTA giant letters ---- */
   var cta=document.getElementById('ctaTitle');
   if(cta){
     var cchs=split(cta);
-    gsap.from(cchs,{yPercent:112,duration:.9,stagger:.04,ease:'power4.out',immediateRender:false,
+    gsap.from(cchs,{yPercent:112,duration:.85,stagger:.04,ease:'expo.out',immediateRender:false,
       scrollTrigger:{trigger:'.cta',start:'top 75%'}});
   }
 
-  /* ---- magnetic buttons ---- */
-  document.querySelectorAll('.btn,.verb-cta,.pill-nav .cta,.edge-nav').forEach(function(b){
+  /* ---- magnetic buttons: cursor pull + physical press (gated to fine pointers) ---- */
+  var fineHover=matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if(fineHover)document.querySelectorAll('.btn,.verb-cta,.pill-nav .cta,.edge-nav').forEach(function(b){
+    var pressed=false;
     b.addEventListener('mousemove',function(e){
+      if(pressed)return;
       var r=b.getBoundingClientRect();
-      gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.3,y:(e.clientY-r.top-r.height/2)*.4,duration:.4,ease:'power2.out'});
+      gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.3,y:(e.clientY-r.top-r.height/2)*.4,duration:.4,ease:'power2.out',overwrite:'auto'});
     });
-    b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'})});
+    b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,scale:1,duration:.6,ease:'elastic.out(1,.4)'})});
+    /* press feedback — buttons must respond to touch */
+    b.addEventListener('pointerdown',function(){pressed=true;gsap.to(b,{scale:.94,duration:.12,ease:'power2.out',overwrite:'auto'})});
+    b.addEventListener('pointerup',function(){pressed=false;gsap.to(b,{scale:1,duration:.35,ease:'back.out(2.2)',overwrite:'auto'})});
   });
 
   /* ---- label decode on first view ---- */

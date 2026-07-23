@@ -638,13 +638,17 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 /* grain */
 (function(){
   const c=document.querySelector('.grain-overlay'),x=c.getContext('2d');
-  function rs(){c.width=Math.max(2,innerWidth/2);c.height=Math.max(2,innerHeight/2)}
-  rs();addEventListener('resize',rs);
-  (function loop(){try{
-    const im=x.createImageData(c.width,c.height),d=im.data;
-    for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
-    x.putImageData(im,0,0);
-  }catch(e){}setTimeout(loop,45)})();
+  /* small internal buffer stretched to full screen via CSS — same look, ~15x cheaper */
+  c.width=200;c.height=Math.max(2,Math.round(200*innerHeight/Math.max(1,innerWidth)));
+  addEventListener('resize',function(){c.height=Math.max(2,Math.round(200*innerHeight/Math.max(1,innerWidth)))});
+  const im=x.createImageData(c.width,c.height),d=im.data;
+  (function loop(){
+    if(!document.hidden){try{
+      for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
+      x.putImageData(im,0,0);
+    }catch(e){}}
+    setTimeout(loop,70);
+  })();
 })();
 
 /* scroll progress */
@@ -728,8 +732,8 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 
   function build(){
     var holder=document.getElementById('sketch'); if(!holder)return;
-    var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-    renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));
+    var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
     holder.appendChild(renderer.domElement);
     var scene=new THREE.Scene();
     var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,23);
@@ -763,11 +767,14 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     size(); addEventListener('resize',size); setInterval(size,1500);
     window.__koogRender=function(){ try{renderer.render(scene,cam)}catch(e){} };
     (function loop(){
+      requestAnimationFrame(loop);
+      if(document.hidden)return;
+      var r=holder.getBoundingClientRect();
+      if(r.bottom<-40||r.top>innerHeight+40)return;   /* off-screen: no GPU work while scrolling elsewhere */
       if(!rm) baseY+=0.0015;
       cy+=(ty-cy)*0.05; cx+=(tx-cx)*0.05;
       group.rotation.y=baseY+cy; group.rotation.x=cx;
       try{renderer.render(scene,cam)}catch(e){}
-      requestAnimationFrame(loop);
     })();
   }
 })();

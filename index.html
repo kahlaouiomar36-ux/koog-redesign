@@ -1383,17 +1383,17 @@ const DPR = Math.min(devicePixelRatio,2);
 renderer.setPixelRatio(DPR);
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 0.82;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-const key = new THREE.PointLight(0xffffff,40,40); key.position.set(4,5,5); scene.add(key);
-const rim = new THREE.PointLight(0xff5a3c,26,40); rim.position.set(-5,-2,3); scene.add(rim);
+const key = new THREE.PointLight(0xffffff,16,40); key.position.set(4,5,5); scene.add(key);
+const rim = new THREE.PointLight(0xff5a3c,10,40); rim.position.set(-5,-2,3); scene.add(rim);
 
 const melt = {
   uMouse:{value:new THREE.Vector3(9999,9999,9999)}, uTime:{value:0}, uSigma:{value:0.75},
-  uStrength:{value:0.42}, uVelocity:{value:0.0},
+  uStrength:{value:0.14}, uVelocity:{value:0.0},
   uFresnelColor:{value:new THREE.Color(0xff2301)}, uFresnelStrength:{value:0.0}
 };
 const GLSL_NOISE = `
@@ -1455,9 +1455,9 @@ function applyMelt(mat, fresnel){
 }
 
 const glass = new THREE.MeshPhysicalMaterial({
-  transmission:1, thickness:1.1, roughness:0.06, metalness:0, ior:1.45, envMapIntensity:1.1,
-  iridescence:0.45, iridescenceIOR:1.3, iridescenceThicknessRange:[120,760],
-  clearcoat:1, clearcoatRoughness:0.08, attenuationColor:new THREE.Color(0xffe9e4), attenuationDistance:3.2
+  transmission:1, thickness:0.32, roughness:0.0, metalness:0, ior:1.5, envMapIntensity:0.4,
+  iridescence:0.0,
+  clearcoat:1, clearcoatRoughness:0.02, attenuationColor:new THREE.Color(0xffffff), attenuationDistance:12.0
 });
 applyMelt(glass, true);
 const cube = new THREE.Mesh(new RoundedBoxGeometry(1.8,1.8,1.8,12,0.28), glass);
@@ -1467,7 +1467,7 @@ scene.add(cube);
 const textGroup = new THREE.Group(); scene.add(textGroup);
 let font=null, pendingWord=0, textMesh=null;
 const WORDS=['BUILD','AUTOMATE','GROW'];
-const txtMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.35, metalness:0.1, envMapIntensity:0.7, emissive:0x110402, emissiveIntensity:1 });
+const txtMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.4, metalness:0.1, envMapIntensity:0.5, emissive:0x0a0301, emissiveIntensity:0.5 });
 const txtMatRed = txtMat.clone(); txtMatRed.color.set(0xff2301); txtMatRed.emissive.set(0x2a0500);
 applyMelt(txtMat, false); applyMelt(txtMatRed, false);
 function buildWord(idx){
@@ -1484,7 +1484,7 @@ new FontLoader().load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(cw(),chh()), 0.55, 0.5, 0.85);
+const bloom = new UnrealBloomPass(new THREE.Vector2(cw(),chh()), 0.16, 0.35, 0.92);
 composer.addPass(bloom);
 const ChromaCaustic = {
   uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uAmount:{value:0.0}, uCenter:{value:new THREE.Vector2(0.5,0.5)} },

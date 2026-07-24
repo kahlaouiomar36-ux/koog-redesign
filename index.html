@@ -330,6 +330,12 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
    ============================================================ */
 .works{padding-bottom:6vh}
 .works .gallery-header{position:relative;z-index:1;margin-bottom:clamp(60px,12vh,150px)}
+/* scroll ink-in headline (outline always readable; solid fills on scroll) */
+.arc-headline{position:relative;display:inline-block;font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(2.4rem,7vw,6rem);line-height:.92;letter-spacing:-.02em}
+.arc-headline .ghost{display:block;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.22)}
+.arc-headline .ink{position:absolute;inset:0;display:block;color:#fff;clip-path:inset(calc((1 - var(--p,0)) * 100%) 0 0 0);will-change:clip-path}
+.arc-headline .r{color:var(--red)}
+.arc-sub{margin-top:16px;font-size:var(--text-xs);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted)}
 .pg-gallery{display:flex;flex-direction:column;gap:22vh;position:relative;z-index:2}
 .pg-item{display:block;overflow:hidden}
 .pg-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.07)}
@@ -612,8 +618,12 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 <!-- ============ WORKS ============ -->
 <section class="works" id="works">
   <div class="gallery-header">
-    <h2 class="label">ARCHIVE_OF_THE_SELECTED_WORKS — BY_KOOG</h2>
-    <div class="meta" style="margin-top:6px;color:var(--faint)">( Projects built to perform )</div>
+    <span class="label" style="display:block;margin-bottom:clamp(20px,4vh,40px)">SELECTED_WORK</span>
+    <h2 class="arc-headline" id="arcHeadline">
+      <span class="ghost" aria-hidden="true">Archive of<br>the selected works<br>by KOOG<span class="r">.</span></span>
+      <span class="ink">Archive of<br>the selected works<br>by KOOG<span class="r">.</span></span>
+    </h2>
+    <div class="arc-sub">( Projects built to perform )</div>
   </div>
   <div class="pg-gallery">
     <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-stay"><span class="gword" aria-hidden="true">STAY</span><div class="card-ui"><div class="ch"><span>KOOG STAY</span><span>stay.koog.ma</span></div><div class="cb">
@@ -1112,6 +1122,11 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     gsap.from(items,{y:40,opacity:0,duration:.65,stagger:.055,ease:'expo.out',immediateRender:false,
       scrollTrigger:{trigger:wrap,start:'top 85%'}});
   });
+
+  /* ---- works headline: scroll-scrubbed ink-in (outline -> solid) ---- */
+  var arc=document.getElementById('arcHeadline');
+  if(arc)ScrollTrigger.create({trigger:arc,start:'top 82%',end:'top 34%',scrub:.6,
+    onUpdate:function(s){arc.style.setProperty('--p',s.progress.toFixed(3));}});
 
   /* ---- works: scale-in + deep parallax ---- */
   document.querySelectorAll('.pg-item').forEach(function(item){

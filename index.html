@@ -285,6 +285,15 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 @media(max-width:560px){.flip-item .fr{display:none}}
 
 /* services archive (v3) */
+#services{position:relative;overflow:hidden}
+#services .sec-head,#services .archive{position:relative;z-index:1}
+.dotgrid{position:absolute;left:0;right:0;top:-30%;height:160%;z-index:0;pointer-events:none;opacity:.4;
+  background-image:radial-gradient(circle, rgba(255,35,1,.32) 1px, transparent 1.5px);
+  background-size:30px 30px;will-change:transform;animation:dotdrift 22s linear infinite;
+  -webkit-mask:radial-gradient(130% 70% at 60% 45%, #000 22%, transparent 72%);
+  mask:radial-gradient(130% 70% at 60% 45%, #000 22%, transparent 72%)}
+@keyframes dotdrift{from{transform:translateY(0)}to{transform:translateY(-30px)}}
+@media(prefers-reduced-motion:reduce){.dotgrid{animation:none}}
 .archive{border-top:1px solid var(--line)}
 .arc{display:grid;grid-template-columns:64px 1fr minmax(0,44%);align-items:baseline;gap:18px;padding:clamp(15px,2.4vh,24px) 0;border-bottom:1px solid var(--line);transition:padding-left .3s cubic-bezier(.2,.8,.2,1)}
 .arc:hover{padding-left:16px}
@@ -571,6 +580,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 
 <!-- ============ SERVICES ============ -->
 <section id="services">
+  <div class="dotgrid" aria-hidden="true"></div>
   <div class="sec-head">
     <h2 class="display reveal">Eleven crafts.<br>One team<span class="dot">.</span></h2>
     <span class="label">INDEX_OF_SERVICES</span>

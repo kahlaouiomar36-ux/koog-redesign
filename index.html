@@ -40,7 +40,7 @@ a{color:inherit;text-decoration:none}
 
 canvas.grain-overlay{position:fixed;inset:0;width:100%;height:100%;z-index:9999;mix-blend-mode:screen;opacity:.05;pointer-events:none}
 a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:4px}
-#scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--red);z-index:400000}
+#scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--red);z-index:400000;box-shadow:0 0 12px rgba(255,35,1,.7),0 0 4px rgba(255,35,1,.9)}
 
 .label{font-size:var(--text-xs);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted);font-weight:500}
 .meta{font-size:var(--text-xs);letter-spacing:var(--tracking-meta);text-transform:uppercase;color:var(--muted);font-weight:500}
@@ -1091,8 +1091,28 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   st.textContent='.ch{display:inline-block;will-change:transform}.verb{overflow:hidden}.w{display:inline-block}';
   document.head.appendChild(st);
 
-  /* ---- native scroll (dropped Lenis: its smoothing read as "sticky/heavy") ---- */
+  /* ---- smooth momentum scroll (Lenis) — the connective tissue between sections.
+         Driven off the GSAP ticker so ScrollTrigger stays perfectly in sync.
+         Native scroll kept on touch devices (they already feel fluid). ---- */
+  var lenis=null, coarse=matchMedia('(pointer:coarse)').matches;
   gsap.ticker.lagSmoothing(0);
+  if(window.Lenis && !coarse){
+    try{
+      lenis=new Lenis({lerp:0.085, wheelMultiplier:1.0, smoothWheel:true, syncTouch:false});
+      lenis.on('scroll',ScrollTrigger.update);
+      gsap.ticker.add(function(t){ lenis.raf(t*1000); });
+      window.__lenis=lenis;
+      /* route in-page anchors through Lenis so jumps glide instead of snapping */
+      document.querySelectorAll('a[href^="#"]').forEach(function(a){
+        a.addEventListener('click',function(e){
+          var id=a.getAttribute('href'); if(!id||id.charAt(0)!=='#'||id.length<2)return;
+          var tg=document.querySelector(id); if(!tg)return;
+          e.preventDefault(); lenis.scrollTo(tg,{offset:-6,duration:1.15,easing:function(x){return 1-Math.pow(1-x,3);}});
+          var mm=document.querySelector('.mobile-menu'); if(mm)mm.classList.remove('open');
+        });
+      });
+    }catch(e){ lenis=null; }
+  }
 
   /* ---- char splitter (keeps nested spans like the red dot) ---- */
   function split(el){
@@ -1229,7 +1249,32 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     }});
   });
 
-  addEventListener('load',function(){ScrollTrigger.refresh()});
+  /* ---- section-transfer: each section's content lifts, sharpens and settles as
+         it takes over the viewport. Scrubbed to scroll so it reads as one
+         continuous hand-off from section to section, not isolated pop-ins. ---- */
+  gsap.utils.toArray('#services .deck-wrap, .flip-band .flip-cols, .quote figure, .cta')
+    .forEach(function(block){
+      gsap.fromTo(block,{y:70,filter:'blur(7px)'},{y:0,filter:'blur(0px)',ease:'power2.out',
+        scrollTrigger:{trigger:block,start:'top 90%',end:'top 56%',scrub:0.7}});
+    });
+
+  /* ---- depth parallax: decorative layers drift slower than the content in front,
+         giving the scroll a sense of dimension (the "gliding through" feel). ---- */
+  gsap.utils.toArray('.gword').forEach(function(g){
+    gsap.fromTo(g,{yPercent:14},{yPercent:-16,ease:'none',
+      scrollTrigger:{trigger:g.closest('.pg-item')||g,start:'top bottom',end:'bottom top',scrub:1}});
+  });
+  var fw=document.querySelector('.flip-watermark');
+  if(fw)gsap.fromTo(fw,{yPercent:12},{yPercent:-12,ease:'none',
+    scrollTrigger:{trigger:'.flip-band',start:'top bottom',end:'bottom top',scrub:1}});
+  var giant=document.querySelector('.ccap-center .giant');
+  if(giant)gsap.fromTo(giant,{yPercent:8},{yPercent:-8,ease:'none',
+    scrollTrigger:{trigger:'.ccap-section',start:'top bottom',end:'bottom top',scrub:1}});
+  var stmt=document.querySelector('.statement .every');
+  if(stmt)gsap.fromTo(stmt,{yPercent:6},{yPercent:-6,ease:'none',
+    scrollTrigger:{trigger:'.statement',start:'top bottom',end:'bottom top',scrub:1.2}});
+
+  addEventListener('load',function(){ScrollTrigger.refresh(); if(window.__lenis)window.__lenis.resize();});
 })();
 </script>
 

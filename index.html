@@ -511,7 +511,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       <p class="verb-sub" id="hSub">Websites, applications and platforms — assembled piece by piece, engineered to last.</p>
       <a class="verb-cta" id="hCta" href="#services">Explore our services</a>
     </div>
-    <span class="hero-glass-hint" aria-hidden="true">MOVE THE CURSOR — THE FORM RESPONDS</span>
+    <span class="hero-glass-hint" aria-hidden="true">MOVE THE CURSOR — THE GLASS MELTS</span>
   </div>
 
   <div class="svc-left">
@@ -1330,91 +1330,221 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 })();
 </script>
 
-<!-- ============ WIREFRAME HERO (three@0.160 ESM) ============
-     Crisp rotating wireframe geometry — morphs per verb (cube=BUILD,
-     torus-knot=AUTOMATE, geodesic=GROW). White shell + red core. No fog,
-     no transmission, no bloom. Fails silently in the Artifact (no network),
-     leaving the DOM copy as the hero. Isolated module scope. -->
+<!-- ============ LIQUID-GLASS HERO (three@0.160 ESM) ============
+     Runs on GitHub Pages (network). Fails silently in the Artifact (no network),
+     leaving the DOM copy as the hero. Isolated module scope — does not touch the
+     r128 global that powers the AI-Lab sphere. -->
 <script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" }}
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
 </script>
 <script type="module">
 try{
 const canvas = document.getElementById('heroGlass');
 if(!canvas) throw new Error('no canvas');
+
 const THREE = await import('three');
+const { RoundedBoxGeometry } = await import('three/addons/geometries/RoundedBoxGeometry.js');
+const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+const { EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js');
+const { RenderPass } = await import('three/addons/postprocessing/RenderPass.js');
+const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
+const { ShaderPass } = await import('three/addons/postprocessing/ShaderPass.js');
+const { FXAAShader } = await import('three/addons/shaders/FXAAShader.js');
+const { FontLoader } = await import('three/addons/loaders/FontLoader.js');
+const { TextGeometry } = await import('three/addons/geometries/TextGeometry.js');
 
 const cw = ()=>canvas.clientWidth||innerWidth, chh = ()=>canvas.clientHeight||innerHeight;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, cw()/chh(), 0.1, 100);
 camera.position.set(0,0,6);
+
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const DPR = Math.min(devicePixelRatio,2);
+renderer.setPixelRatio(DPR);
 renderer.setClearColor(0x000000, 0);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-const group = new THREE.Group(); scene.add(group);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const key = new THREE.PointLight(0xffffff,40,40); key.position.set(4,5,5); scene.add(key);
+const rim = new THREE.PointLight(0xff5a3c,26,40); rim.position.set(-5,-2,3); scene.add(rim);
 
-/* white shell material (additive so lines glow crisp on black) + red accent */
-const whiteMat = new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false });
-const redMat   = new THREE.LineBasicMaterial({ color:0xff2301, transparent:true, opacity:0.9,  blending:THREE.AdditiveBlending, depthWrite:false });
-
-/* geometry per verb */
-function geoFor(i){
-  if(i===0) return new THREE.BoxGeometry(2.5,2.5,2.5,2,2,2);        // BUILD — cube grid
-  if(i===1) return new THREE.TorusKnotGeometry(1.35,0.42,140,18);  // AUTOMATE — looping knot
-  return new THREE.IcosahedronGeometry(2.0,1);                      // GROW — geodesic
+const melt = {
+  uMouse:{value:new THREE.Vector3(9999,9999,9999)}, uTime:{value:0}, uSigma:{value:0.75},
+  uStrength:{value:0.42}, uVelocity:{value:0.0},
+  uFresnelColor:{value:new THREE.Color(0xff2301)}, uFresnelStrength:{value:0.0}
+};
+const GLSL_NOISE = `
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x,289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0,0.5,1.0,2.0);
+  vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g; vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;
+  i = mod(i,289.0);
+  vec4 p = permute(permute(permute(i.z + vec4(0.0,i1.z,i2.z,1.0)) + i.y + vec4(0.0,i1.y,i2.y,1.0)) + i.x + vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0*floor(p*ns.z*ns.z);
+  vec4 x_ = floor(j*ns.z); vec4 y_ = floor(j - 7.0*x_);
+  vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0)*2.0+1.0; vec4 s1 = floor(b1)*2.0+1.0; vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+  vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)), 0.0); m=m*m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+const GLSL_FIELD = `
+uniform vec3 uMouse; uniform float uTime; uniform float uSigma; uniform float uStrength; uniform float uVelocity;
+float infl(vec3 wp){ float d=distance(wp, uMouse); return exp(-(d*d)/(2.0*uSigma*uSigma)); }
+float ripple(vec3 wp){ return snoise(wp*2.4 + vec3(0.0,0.0,uTime*1.2)); }
+float field(vec3 wp){
+  float I = infl(wp);
+  float rp = ripple(wp) * I * (0.16 + uVelocity*0.5);
+  float breath = sin(uTime*1.1) * 0.5 + 0.5;
+  return I * uStrength * 0.45 + rp + (breath*0.008);
+}`;
+function applyMelt(mat, fresnel){
+  mat.onBeforeCompile = (sh)=>{
+    Object.assign(sh.uniforms, melt);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${GLSL_NOISE}\n${GLSL_FIELD}`);
+    sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+      { vec3 wp=(modelMatrix*vec4(position,1.0)).xyz; float e=0.06;
+        vec3 grad=vec3(field(wp+vec3(e,0,0))-field(wp-vec3(e,0,0)),
+                       field(wp+vec3(0,e,0))-field(wp-vec3(0,e,0)),
+                       field(wp+vec3(0,0,e))-field(wp-vec3(0,0,e)))/(2.0*e);
+        objectNormal = normalize(objectNormal - grad*1.6); }`);
+    sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      { vec3 wp=(modelMatrix*vec4(position,1.0)).xyz; float h=field(wp);
+        transformed += normalize(objectNormal)*h;
+        transformed.y -= infl(wp)*uStrength*0.55; }`);
+    if(fresnel){
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>',
+        `#include <common>\nuniform vec3 uFresnelColor; uniform float uFresnelStrength;`);
+      sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        { float f = pow(1.0 - clamp(dot(normalize(vNormal), normalize(vViewPosition)),0.0,1.0), 3.0);
+          totalEmissiveRadiance += uFresnelColor * f * (0.6 + uFresnelStrength); }`);
+    }
+  };
+  mat.needsUpdate = true;
 }
-let shell=null;
-function buildShell(i){
-  if(shell){ group.remove(shell); shell.geometry.dispose(); }
-  const g=geoFor(i);
-  shell=new THREE.LineSegments(new THREE.WireframeGeometry(g), whiteMat);
-  g.dispose(); group.add(shell);
-}
-/* constant red geodesic core inside the shell */
-const coreG=new THREE.IcosahedronGeometry(1.0,1);
-const core=new THREE.LineSegments(new THREE.WireframeGeometry(coreG), redMat); coreG.dispose();
-group.add(core);
-/* bright vertex nodes on the core */
-const nodes=new THREE.Points(coreG.clone(), new THREE.PointsMaterial({color:0xff2301,size:0.09,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
-core.add(nodes);
-buildShell(0);
 
-let pulse=0;
-function setWord(i){ buildShell(i); pulse=1; }
-window.heroGlass = { setWord, forceRender:()=>{try{renderer.render(scene,camera);canvas.classList.add('live');}catch(e){window.__glassErr='r:'+(e&&e.message);}} };
-
-/* cursor parallax */
-let tx=0,ty=0,cx=0,cy=0;
-addEventListener('pointermove',(e)=>{
-  const r=canvas.getBoundingClientRect();
-  if(e.clientY<r.top||e.clientY>r.bottom) return;
-  tx=((e.clientX-r.left)/r.width-0.5); ty=((e.clientY-r.top)/r.height-0.5);
+const glass = new THREE.MeshPhysicalMaterial({
+  transmission:1, thickness:1.1, roughness:0.06, metalness:0, ior:1.45, envMapIntensity:1.1,
+  iridescence:0.45, iridescenceIOR:1.3, iridescenceThicknessRange:[120,760],
+  clearcoat:1, clearcoatRoughness:0.08, attenuationColor:new THREE.Color(0xffe9e4), attenuationDistance:3.2
 });
+applyMelt(glass, true);
+const cube = new THREE.Mesh(new RoundedBoxGeometry(1.8,1.8,1.8,12,0.28), glass);
+scene.add(cube);
 
-function size(){ const w=cw(),h=chh(); if(w<2||h<2) return false;
-  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); return true; }
+/* refracted word — one at a time, swapped by setWord() */
+const textGroup = new THREE.Group(); scene.add(textGroup);
+let font=null, pendingWord=0, textMesh=null;
+const WORDS=['BUILD','AUTOMATE','GROW'];
+const txtMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.35, metalness:0.1, envMapIntensity:0.7, emissive:0x110402, emissiveIntensity:1 });
+const txtMatRed = txtMat.clone(); txtMatRed.color.set(0xff2301); txtMatRed.emissive.set(0x2a0500);
+applyMelt(txtMat, false); applyMelt(txtMatRed, false);
+function buildWord(idx){
+  if(!font) { pendingWord=idx; return; }
+  if(textMesh){ textGroup.remove(textMesh); textMesh.geometry.dispose(); }
+  const g = new TextGeometry(WORDS[idx], { font, size:0.6, height:0.02, curveSegments:8, bevelEnabled:false });
+  g.center();
+  textMesh = new THREE.Mesh(g, idx===1 ? txtMatRed : txtMat);
+  textMesh.position.set(0,0,-0.9);
+  textMesh.scale.set(0.6,0.6,0.6);
+  textGroup.add(textMesh);
+}
+new FontLoader().load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',(f)=>{ font=f; buildWord(pendingWord); });
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(cw(),chh()), 0.55, 0.5, 0.85);
+composer.addPass(bloom);
+const ChromaCaustic = {
+  uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uAmount:{value:0.0}, uCenter:{value:new THREE.Vector2(0.5,0.5)} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
+  fragmentShader:`
+    uniform sampler2D tDiffuse; uniform float uTime; uniform float uAmount; uniform vec2 uCenter; varying vec2 vUv;
+    void main(){
+      vec2 dir = vUv - uCenter; float d = length(dir);
+      vec2 caustic = vec2(sin(vUv.y*34.0 + uTime*1.6), cos(vUv.x*34.0 - uTime*1.4)) * 0.0016;
+      float a = (0.0025 + uAmount*0.02) * (0.35 + d*1.5);
+      vec2 off = normalize(dir + 0.0001) * a + caustic;
+      float r = texture2D(tDiffuse, vUv + off).r;
+      float g = texture2D(tDiffuse, vUv).g;
+      float b = texture2D(tDiffuse, vUv - off).b;
+      gl_FragColor = vec4(r,g,b, texture2D(tDiffuse,vUv).a);
+    }`
+};
+const chroma = new ShaderPass(ChromaCaustic); composer.addPass(chroma);
+const fxaa = new ShaderPass(FXAAShader); composer.addPass(fxaa);
+function setFxaa(){ fxaa.material.uniforms['resolution'].value.set(1/(cw()*DPR), 1/(chh()*DPR)); }
+
+function size(){
+  const w=cw(), h=chh(); if(w<2||h<2) return false;
+  renderer.setSize(w,h,false); composer.setSize(w,h); bloom.setSize(w,h);
+  camera.aspect=w/h; camera.updateProjectionMatrix(); setFxaa(); return true;
+}
 size(); addEventListener('resize',size); setInterval(size,1500);
 
+/* pointer melt (mapped to the canvas rect) */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2(9999,9999);
+const target = new THREE.Vector3(9999,9999,9999);
+const springPos = new THREE.Vector3(9999,9999,9999);
+const springVel = new THREE.Vector3();
+const plane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+let lastTarget = new THREE.Vector3(); let mouseSpeed = 0; let active=false;
+addEventListener('pointermove',(e)=>{
+  const r=canvas.getBoundingClientRect();
+  if(e.clientY<r.top||e.clientY>r.bottom){ target.set(9999,9999,9999); active=false; return; }
+  ndc.x=((e.clientX-r.left)/r.width)*2-1; ndc.y=-((e.clientY-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(ndc,camera);
+  const hit=raycaster.intersectObject(cube,false); const p=new THREE.Vector3();
+  if(hit.length){p.copy(hit[0].point);} else {raycaster.ray.intersectPlane(plane,p);}
+  if(p){ if(active)mouseSpeed=p.distanceTo(lastTarget); lastTarget.copy(p); target.copy(p); active=true; }
+});
+
+/* render only when the hero is on screen */
 let onScreen=true;
-function checkVis(){ const r=canvas.getBoundingClientRect(); onScreen=r.bottom>0&&r.top<innerHeight; }
+function checkVis(){ const r=canvas.getBoundingClientRect(); onScreen = r.bottom>0 && r.top<innerHeight; }
 addEventListener('scroll',checkVis,{passive:true}); setInterval(checkVis,400); checkVis();
 
-const clock=new THREE.Clock(); let lit=false;
+const clock = new THREE.Clock(); let lit=false;
 function tick(){
-  const t=clock.getElapsedTime();
-  cx+=(tx-cx)*0.05; cy+=(ty-cy)*0.05;
-  group.rotation.y = t*0.32 + cx*0.9;
-  group.rotation.x = Math.sin(t*0.3)*0.18 - cy*0.6;
-  core.rotation.y = -t*0.5; core.rotation.z = t*0.22;
-  pulse*=0.92;
-  group.scale.setScalar(1 + pulse*0.14 + Math.sin(t*1.1)*0.008);
-  if(onScreen && !document.hidden){ if(size()!==false){ renderer.render(scene,camera); if(!lit){lit=true;canvas.classList.add('live');} } }
+  const dt = Math.min(clock.getDelta(),0.033); const t = clock.elapsedTime;
+  melt.uTime.value=t; chroma.uniforms.uTime.value=t;
+  if(target.x<9000){ const k=110,damp=15;
+    const acc=target.clone().sub(springPos).multiplyScalar(k).addScaledVector(springVel,-damp);
+    springVel.addScaledVector(acc,dt); springPos.addScaledVector(springVel,dt);
+  } else { springVel.multiplyScalar(0.9); }
+  melt.uMouse.value.copy(springPos);
+  mouseSpeed*=0.85; const vel=Math.min(mouseSpeed*6.0,1.0);
+  melt.uVelocity.value += (vel-melt.uVelocity.value)*0.2;
+  chroma.uniforms.uAmount.value += (vel-chroma.uniforms.uAmount.value)*0.15;
+  melt.uFresnelStrength.value += (vel*1.2-melt.uFresnelStrength.value)*0.1;
+  cube.rotation.y=t*0.22; cube.rotation.x=Math.sin(t*0.3)*0.18;
+  cube.scale.setScalar(1+Math.sin(t*1.1)*0.012);
+  textGroup.rotation.y=Math.sin(t*0.2)*0.06;
+  if(onScreen && !document.hidden){
+    if(size()!==false){ composer.render(); if(!lit){ lit=true; canvas.classList.add('live'); } }
+  }
   requestAnimationFrame(tick);
 }
 tick();
+
+window.heroGlass = { setWord:buildWord, forceRender:()=>{try{composer.render();canvas.classList.add('live');}catch(e){window.__glassErr='r:'+e.message;}} };
 window.__glassOK = true;
-if(window.__heroGo) window.__heroGo(0); // re-sync word now that the wireframe is ready
+if(window.__heroGo) window.__heroGo(0); // re-sync word now that the cube is ready
 }catch(err){ window.__glassErr = (err&&err.message)||String(err); /* DOM copy remains as the hero */ }
 </script>
 

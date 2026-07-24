@@ -1088,7 +1088,8 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 
   /* injected motion styles */
   var st=document.createElement('style');
-  st.textContent='.ch{display:inline-block;will-change:transform}.verb{overflow:hidden}.w{display:inline-block}';
+  st.textContent='.ch{display:inline-block;will-change:transform}.verb{overflow:hidden}.w{display:inline-block}'
+    +'.display{overflow:hidden;padding-bottom:.08em}.mask-inner{display:block;will-change:transform}';
   document.head.appendChild(st);
 
   /* ---- smooth momentum scroll (Lenis) — the connective tissue between sections.
@@ -1098,7 +1099,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   gsap.ticker.lagSmoothing(0);
   if(window.Lenis && !coarse){
     try{
-      lenis=new Lenis({lerp:0.085, wheelMultiplier:1.0, smoothWheel:true, syncTouch:false});
+      lenis=new Lenis({lerp:0.075, wheelMultiplier:1.0, smoothWheel:true, syncTouch:false});
       lenis.on('scroll',ScrollTrigger.update);
       gsap.ticker.add(function(t){ lenis.raf(t*1000); });
       window.__lenis=lenis;
@@ -1140,12 +1141,19 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     gsap.to('#heroCopy',{x:gx*12,y:gy*8,duration:.9,ease:'power2.out',overwrite:'auto'});
   })}
 
-  /* ---- section headings: letter rise ---- */
+  /* ---- section headings: masked line-reveal, SCRUB-LINKED (nudot signature).
+         The heading clips its content; the inner block slides up from below the
+         mask in lockstep with the scroll wheel — so the reveal tracks your motion
+         instead of firing once. ---- */
   gsap.utils.toArray('.display').forEach(function(h){
     h.classList.remove('reveal');h.classList.add('in');
-    var chs=split(h);
-    gsap.from(chs,{yPercent:112,opacity:0,duration:.75,stagger:.02,ease:'expo.out',immediateRender:false,
-      scrollTrigger:{trigger:h,start:'top 85%'}});
+    if(!h.dataset.masked){
+      var inner=document.createElement('span'); inner.className='mask-inner';
+      while(h.firstChild) inner.appendChild(h.firstChild);
+      h.appendChild(inner); h.dataset.masked='1';
+    }
+    gsap.fromTo(h.querySelector('.mask-inner'),{yPercent:120},{yPercent:0,ease:'none',
+      scrollTrigger:{trigger:h,start:'top 92%',end:'top 50%',scrub:0.5}});
   });
 
   /* ---- statement: word-by-word fill on scrub ---- */
@@ -1170,13 +1178,13 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       scrollTrigger:{trigger:'.statement',start:'top 72%',end:'top 22%',scrub:true}});
   }
 
-  /* ---- staggered list reveals ---- */
-  [['.archive','.arc'],['.method','.step'],['#team','.team-row']].forEach(function(p){
+  /* ---- staggered list reveals — SCRUB-LINKED so rows cascade in as you scroll ---- */
+  [['.method','.step'],['#team','.team-row']].forEach(function(p){
     var wrap=document.querySelector(p[0]);if(!wrap)return;
     var items=wrap.querySelectorAll(p[1]);
     items.forEach(function(it){it.classList.remove('reveal');it.classList.add('in')});
-    gsap.from(items,{y:40,opacity:0,duration:.65,stagger:.055,ease:'expo.out',immediateRender:false,
-      scrollTrigger:{trigger:wrap,start:'top 85%'}});
+    gsap.fromTo(items,{y:52,opacity:0},{y:0,opacity:1,stagger:0.08,ease:'none',
+      scrollTrigger:{trigger:wrap,start:'top 90%',end:'top 45%',scrub:0.6}});
   });
 
   /* ---- works headline: scroll-scrubbed ink-in (outline -> solid) ---- */
@@ -1192,9 +1200,9 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       scrollTrigger:{trigger:item,start:'top bottom',end:'bottom top',scrub:1.2}});
   });
 
-  /* ---- ring gallery center pop (ring cards are now the 3D sphere) ---- */
-  gsap.from('.ccap-center > *:not(.koogy-wrap)',{y:36,opacity:0,stagger:.1,duration:.8,ease:'expo.out',immediateRender:false,
-    scrollTrigger:{trigger:'.ccap-section',start:'top 55%'}});
+  /* ---- ring gallery center — scrubbed cascade ---- */
+  gsap.fromTo('.ccap-center > *:not(.koogy-wrap)',{y:44,opacity:0},{y:0,opacity:1,stagger:0.12,ease:'none',
+    scrollTrigger:{trigger:'.ccap-section',start:'top 78%',end:'top 40%',scrub:0.6}});
 
   /* ---- Koogy: entrance + glow + cursor follow ---- */
   var koogyWrap=document.getElementById('koogyWrap'),koogyGlow=document.querySelector('.koogy-glow');
@@ -1214,13 +1222,26 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     }
   }
 
-  /* ---- CTA giant letters ---- */
+  /* ---- CTA giant letters — scrubbed rise ---- */
   var cta=document.getElementById('ctaTitle');
   if(cta){
     var cchs=split(cta);
-    gsap.from(cchs,{yPercent:112,duration:.85,stagger:.04,ease:'expo.out',immediateRender:false,
-      scrollTrigger:{trigger:'.cta',start:'top 75%'}});
+    gsap.fromTo(cchs,{yPercent:118},{yPercent:0,stagger:0.05,ease:'none',
+      scrollTrigger:{trigger:'.cta',start:'top 82%',end:'top 42%',scrub:0.5}});
   }
+
+  /* ---- continuous micro-parallax: keep the whole page in gentle motion as you
+         scroll. nudot has ~70 elements moving at once; small varied speeds tied
+         to scroll (top bottom -> bottom top) give depth and a living surface. ---- */
+  var PARA=[['.label',26],['.arc-sub',34],['.statement .meta',-30],['.quote blockquote',20],
+            ['.quote figcaption',-24],['.method .step p',18],['.flip-band .lead',-22],
+            ['.site-footer .foot-lead',24],['.hero-meta',-16]];
+  PARA.forEach(function(p){
+    gsap.utils.toArray(p[0]).forEach(function(el){
+      gsap.fromTo(el,{y:p[1]},{y:-p[1],ease:'none',
+        scrollTrigger:{trigger:el,start:'top bottom',end:'bottom top',scrub:1.1}});
+    });
+  });
 
   /* ---- magnetic buttons: cursor pull + physical press (gated to fine pointers) ---- */
   var fineHover=matchMedia('(hover:hover) and (pointer:fine)').matches;

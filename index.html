@@ -105,6 +105,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset
 .scene-vision{background:radial-gradient(120% 90% at 30% 80%,#262014 0%,#100e09 55%,#000 100%)}
 .scene-compta{background:radial-gradient(120% 90% at 70% 75%,#15231c 0%,#0a110d 55%,#000 100%)}
 .scene-ops{background:radial-gradient(120% 100% at 50% 0%,#26060022 0%,transparent 60%),radial-gradient(120% 100% at 30% 0%,#20242a 0%,#101317 55%,#000 100%)}
+/* real project photography behind the mockups (dark-graded for legibility + brand cohesion) */
+.scene-media{position:absolute;inset:0;z-index:0;overflow:hidden}
+.scene-media img{width:100%;height:100%;object-fit:cover;opacity:.6;filter:grayscale(.3) contrast(1.02)}
+.scene-media::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 34%,rgba(0,0,0,.12) 0%,rgba(0,0,0,.58) 60%,rgba(0,0,0,.92) 100%)}
+.pg-item:hover .scene-media img{opacity:.72;filter:grayscale(0) contrast(1.05);transition:opacity .5s,filter .5s}
+.scene-media.koogy-media{display:flex;align-items:center;justify-content:flex-end;padding-right:7%}
+.scene-media.koogy-media img{width:auto;height:82%;object-fit:contain;opacity:.92;filter:drop-shadow(0 20px 50px rgba(255,35,1,.25))}
+.scene-media.koogy-media::after{background:radial-gradient(90% 90% at 68% 50%,rgba(22,34,46,.15) 0%,rgba(0,0,0,.5) 62%,rgba(0,0,0,.9) 100%)}
+.pg-item:hover .scene-media.koogy-media img{opacity:1;filter:drop-shadow(0 20px 60px rgba(255,35,1,.4))}
 
 /* mockup cards (imagery) */
 .card-ui{background:#fff;color:#16181b;border-radius:14px;box-shadow:0 40px 100px rgba(0,0,0,.6);overflow:hidden;position:relative;z-index:2}
@@ -616,24 +625,24 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   <div class="works-reel" id="worksReel" aria-hidden="true"></div>
   <div class="works-reel-cap"><span class="label">SHOWREEL — DRAG · SCROLL · LOOPS FOREVER</span></div>
   <div class="pg-gallery">
-    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-stay"><span class="gword" aria-hidden="true">STAY</span><div class="card-ui"><div class="ch"><span>KOOG STAY</span><span>stay.koog.ma</span></div><div class="cb">
+    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-stay"><div class="scene-media"><img src="assets/works/stay.jpg" alt="Traditional Moroccan riad courtyard" loading="lazy"></div><span class="gword" aria-hidden="true">STAY</span><div class="card-ui"><div class="ch"><span>KOOG STAY</span><span>stay.koog.ma</span></div><div class="cb">
       <div class="stat-line"><span>Réservations directes</span><b class="red">+64%</b></div>
       <div class="stat-line" style="border:none"><span>Commission</span><b>0%</b></div>
     </div></div></div></div><div class="pg-caption"><b>KOOG Stay</b><span>HOSPITALITY_OS</span></div></a>
-    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-koogy"><span class="gword" aria-hidden="true">KOOGY</span><div class="card-ui"><div class="ch"><span>KOOGY</span><span class="dot-on">● online</span></div><div class="cb">
+    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-koogy"><div class="scene-media koogy-media"><img src="assets/koogy.png" alt="Koogy — KOOG's AI assistant" loading="lazy"></div><span class="gword" aria-hidden="true">KOOGY</span><div class="card-ui"><div class="ch"><span>KOOGY</span><span class="dot-on">● online</span></div><div class="cb">
       <div class="bub bot">Quels services proposez-vous ?</div>
       <div class="bub user">Développement, IA, chatbots, marketing — de A à Z.</div>
     </div></div></div></div><div class="pg-caption"><b>Koogy</b><span>AI_ASSISTANT</span></div></a>
-    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-vision"><span class="gword" aria-hidden="true">VISION</span><div class="card-ui"><div class="ch"><span>VISION</span><span>KYC</span></div><div class="cb">
+    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-vision"><div class="scene-media"><img src="assets/works/vision.jpg" alt="Facial biometric scan" loading="lazy"></div><span class="gword" aria-hidden="true">VISION</span><div class="card-ui"><div class="ch"><span>VISION</span><span>KYC</span></div><div class="cb">
       <div class="doc-row"><span>DOCUMENT</span><b>CIN — RECTO</b></div>
       <div class="doc-row"><span>EXTRACTION</span><b>1,8 s</b></div>
       <span class="badge">Vérifié — 99,2%</span>
     </div></div></div></div><div class="pg-caption"><b>OCR &amp; Biometrics</b><span>VISION_AI</span></div></a>
-    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-compta"><span class="gword" aria-hidden="true">COMPTA</span><div class="card-ui"><div class="ch"><span>COMPTA</span><span>T2</span></div><div class="cb">
+    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-compta"><div class="scene-media"><img src="assets/works/compta.jpg" alt="Accounting documents and calculator" loading="lazy"></div><span class="gword" aria-hidden="true">COMPTA</span><div class="card-ui"><div class="ch"><span>COMPTA</span><span>T2</span></div><div class="cb">
       <div class="inv"><span>240 documents traités</span><span class="tag">AUTO</span></div>
       <div class="inv" style="border:none"><span><b>0 saisie manuelle</b></span><b class="red" style="color:#FF2301">−70% temps</b></div>
     </div></div></div></div><div class="pg-caption"><b>Compta</b><span>FINANCE_AUTOMATION</span></div></a>
-    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-ops"><span class="gword" aria-hidden="true">OPS</span><div class="kpis">
+    <a class="pg-item reveal" href="#"><div class="pg-img-wrap"><div class="scene scene-ops"><div class="scene-media"><img src="assets/works/ops.jpg" alt="Analytics dashboard on a laptop" loading="lazy"></div><span class="gword" aria-hidden="true">OPS</span><div class="kpis">
       <div class="kpi"><small>Leads</small><b class="red">+128</b></div>
       <div class="kpi"><small>RDV</small><b>36</b></div>
       <div class="kpi"><small>Growth</small><b>+42%</b></div>
@@ -990,19 +999,32 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
   if(typeof THREE!=='undefined'){ start(); }
   else { var tries=0,iv=setInterval(function(){ if(typeof THREE!=='undefined'){clearInterval(iv);start();} else if(++tries>80){clearInterval(iv);} },120); }
 
-  function card(name,tag,c1,stat){
+  function card(name,tag,c1,stat,img){
     var cv=document.createElement('canvas'); cv.width=512; cv.height=640; var x=cv.getContext('2d');
-    var g=x.createLinearGradient(0,0,0,640); g.addColorStop(0,c1); g.addColorStop(1,'#050506');
-    x.fillStyle=g; x.fillRect(0,0,512,640);
-    x.strokeStyle='rgba(255,255,255,.18)'; x.lineWidth=2; x.strokeRect(11,11,490,618);
-    x.fillStyle='rgba(255,255,255,.55)'; x.font='500 19px monospace'; x.textBaseline='alphabetic';
-    x.fillText('KOOG',34,58);
-    x.textAlign='right'; x.fillText(tag,478,58); x.textAlign='left';
-    x.fillStyle='#fff'; x.font='700 21px monospace'; x.fillText(stat,34,556);
-    x.fillStyle='#FF2301'; x.fillRect(34,572,76,7);
-    x.fillStyle='#fff'; x.font='700 58px "Space Grotesk",Arial,sans-serif'; x.fillText(name,32,616);
-    var t=new THREE.CanvasTexture(cv); t.needsUpdate=true;
-    try{t.anisotropy=4;}catch(e){}
+    var t=new THREE.CanvasTexture(cv); try{t.anisotropy=4;}catch(e){}
+    function paint(im){
+      x.clearRect(0,0,512,640);
+      var g=x.createLinearGradient(0,0,0,640); g.addColorStop(0,c1); g.addColorStop(1,'#050506');
+      x.fillStyle=g; x.fillRect(0,0,512,640);
+      if(im){ /* cover-fit the real photo into the top 66% of the card */
+        var dw=512,dh=424, ir=im.width/im.height, dr=dw/dh, sw,sh,sx,sy;
+        if(ir>dr){ sh=im.height; sw=sh*dr; sx=(im.width-sw)/2; sy=0; }
+        else { sw=im.width; sh=sw/dr; sx=0; sy=(im.height-sh)/2; }
+        x.drawImage(im,sx,sy,sw,sh,0,0,dw,dh);
+        var og=x.createLinearGradient(0,0,0,640); og.addColorStop(0,'rgba(0,0,0,.15)'); og.addColorStop(.6,'rgba(5,5,6,.35)'); og.addColorStop(.72,c1); og.addColorStop(1,'#050506');
+        x.fillStyle=og; x.fillRect(0,0,512,640);
+      }
+      x.strokeStyle='rgba(255,255,255,.18)'; x.lineWidth=2; x.strokeRect(11,11,490,618);
+      x.fillStyle='rgba(255,255,255,.6)'; x.font='500 19px monospace'; x.textBaseline='alphabetic';
+      x.fillText('KOOG',34,58);
+      x.textAlign='right'; x.fillText(tag,478,58); x.textAlign='left';
+      x.fillStyle='#fff'; x.font='700 21px monospace'; x.fillText(stat,34,556);
+      x.fillStyle='#FF2301'; x.fillRect(34,572,76,7);
+      x.fillStyle='#fff'; x.font='700 58px "Space Grotesk",Arial,sans-serif'; x.fillText(name,32,616);
+      t.needsUpdate=true;
+    }
+    paint(null);
+    if(img){ var im=new Image(); im.onload=function(){ paint(im); }; im.src=img; }
     return t;
   }
   function build(){
@@ -1012,16 +1034,16 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     holder.appendChild(renderer.domElement);
     var scene=new THREE.Scene();
     var cam=new THREE.PerspectiveCamera(42,1,0.1,100); cam.position.set(0,0,7);
-    var data=[['STAY','HOSPITALITY_OS','#2b2118','+64% direct'],
-              ['KOOGY','AI_ASSISTANT','#16222e','24/7 online'],
-              ['VISION','VISION_AI','#262014','99.2% OCR'],
-              ['COMPTA','FINANCE_AUTO','#15231c','−70% time'],
-              ['OPS','CONTROL_TOWER','#20242a','+42% growth']];
+    var data=[['STAY','HOSPITALITY_OS','#2b2118','+64% direct','assets/works/stay.jpg'],
+              ['KOOGY','AI_ASSISTANT','#16222e','24/7 online','assets/koogy.png'],
+              ['VISION','VISION_AI','#262014','99.2% OCR','assets/works/vision.jpg'],
+              ['COMPTA','FINANCE_AUTO','#15231c','−70% time','assets/works/compta.jpg'],
+              ['OPS','CONTROL_TOWER','#20242a','+42% growth','assets/works/ops.jpg']];
     var PW=2.2,PH=2.75,GAP=0.7,step=PW+GAP,reps=mobile?2:3;
     var planes=[],idx=0;
     for(var r=0;r<reps;r++){ for(var k=0;k<data.length;k++){ var d=data[k];
       var m=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),
-        new THREE.MeshBasicMaterial({map:card(d[0],d[1],d[2],d[3]),transparent:true,side:THREE.DoubleSide}));
+        new THREE.MeshBasicMaterial({map:card(d[0],d[1],d[2],d[3],d[4]),transparent:true,side:THREE.DoubleSide}));
       m.userData.base=idx*step; scene.add(m); planes.push(m); idx++;
     }}
     var total=idx*step, offset=0, vel=0, drag=false, lastX=0;

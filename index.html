@@ -893,6 +893,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.2:1.5));
     holder.appendChild(renderer.domElement);
     var scene=new THREE.Scene();
+    scene.fog=new THREE.Fog(0x000000,15,33);   /* depth: front of the sphere bright, back fades to black -> reads as a volume, not a flat disc */
     var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,23);
     var group=new THREE.Group(); scene.add(group);
 
@@ -903,7 +904,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       pos[i*3]=r*Math.cos(theta)*Math.sin(phi); pos[i*3+1]=r*Math.cos(phi); pos[i*3+2]=r*Math.sin(theta)*Math.sin(phi);
     }
     var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    group.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.06,sizeAttenuation:true,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})));
+    group.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.07,sizeAttenuation:true,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:true})));
 
     /* orbiting product panels facing outward */
     var labels=['STAY','KOOGY','VISION','COMPTA','OPS'], M=mobile?6:10, IR=9, IW=1.7, IH=2.1;
@@ -930,7 +931,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       if(r.bottom<-40||r.top>innerHeight+40)return;   /* off-screen: no GPU work while scrolling elsewhere */
       if(!rm) baseY+=0.0015;
       cy+=(ty-cy)*0.05; cx+=(tx-cx)*0.05;
-      group.rotation.y=baseY+cy; group.rotation.x=cx;
+      group.rotation.y=baseY+cy; group.rotation.x=0.32+cx;   /* constant tilt so the 3D form reads as it turns */
       try{renderer.render(scene,cam)}catch(e){}
     })();
   }
@@ -1136,7 +1137,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
       ccap.addEventListener('mousemove',function(e){
         var gx=e.clientX/innerWidth-.5,gy=e.clientY/innerHeight-.5;
         /* spring: keeps velocity when the cursor reverses — feels alive, not mechanical */
-        gsap.to(koogyWrap,{x:gx*54,y:gy*38,duration:.9,ease:'power3.out',overwrite:'auto'});
+        gsap.to(koogyWrap,{x:gx*90,y:gy*60,rotation:gx*4,duration:.9,ease:'power3.out',overwrite:'auto'});
         gsap.to(koogyGlow,{x:gx*30,y:gy*20,duration:1.1,ease:'power3.out',overwrite:'auto'});
       });
     }

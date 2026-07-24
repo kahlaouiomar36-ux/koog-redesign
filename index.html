@@ -911,9 +911,9 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 /* ring gallery — replaced by the real 3D ParticleSphere below (CSS cards disabled) */
 
 /* ==========================================================================
-   ParticleSphere — vanilla-Three port of the R3F immersive kit's design #1.
-   ~1300 additive particles on a Fibonacci sphere + orbiting product panels,
-   slow spin + cursor parallax. Koogy (DOM) floats in front. Dual-mode boot:
+   Neural constellation — drifting nodes wired by thin lines that form + break
+   (a living network = "Applied Intelligence"), red accent nodes, NO fog.
+   Slow spin + cursor parallax. Koogy (DOM) floats in front. Dual-mode boot:
    runs immediately if THREE is already global (inlined artifact), else lazy-
    loads it from CDN (the GitHub build). Page is fine if it never loads.
    ========================================================================== */
@@ -924,65 +924,91 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
     s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
     s.onload=boot; document.head.appendChild(s); }
 
-  function labelTexture(label){
-    var c=document.createElement('canvas'); c.width=256; c.height=320;
-    var x=c.getContext('2d');
-    var g=x.createLinearGradient(0,0,256,320); g.addColorStop(0,'#1c1c20'); g.addColorStop(1,'#0a0a0c');
-    x.fillStyle=g; x.fillRect(0,0,256,320);
-    x.strokeStyle='rgba(255,255,255,.16)'; x.lineWidth=2; x.strokeRect(7,7,242,306);
-    x.fillStyle='#FF2301'; x.fillRect(22,268,58,6);
-    x.fillStyle='#fff'; x.font='700 30px "Space Grotesk",Arial,sans-serif'; x.textBaseline='alphabetic';
-    x.fillText(label,22,258);
-    x.fillStyle='rgba(255,255,255,.5)'; x.font='500 13px monospace'; x.fillText('KOOG',22,40);
-    var t=new THREE.CanvasTexture(c); t.needsUpdate=true; return t;
-  }
-
   function build(){
     var holder=document.getElementById('sketch'); if(!holder)return;
     var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-    var mobile=innerWidth<700||matchMedia('(pointer:coarse)').matches;   /* lighter on phones — real GPUs are weaker than this test env */
-    renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.2:1.5));
+    var mobile=innerWidth<700||matchMedia('(pointer:coarse)').matches;
+    renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.2:1.6));
     holder.appendChild(renderer.domElement);
-    var scene=new THREE.Scene();
-    scene.fog=new THREE.Fog(0x000000,15,33);   /* depth: front of the sphere bright, back fades to black -> reads as a volume, not a flat disc */
-    var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,23);
+    var scene=new THREE.Scene();   /* NO fog — crisp constellation, not a haze */
+    var cam=new THREE.PerspectiveCamera(45,1,0.1,100); cam.position.set(0,0,26);
     var group=new THREE.Group(); scene.add(group);
 
-    /* particles — Fibonacci sphere with radius jitter */
-    var N=mobile?620:1300, R=9, JIT=4.4, pos=new Float32Array(N*3);
+    /* nodes drifting inside a spherical volume */
+    var N=mobile?64:118, R=11, nodes=[];
+    var posArr=new Float32Array(N*3), colArr=new Float32Array(N*3);
     for(var i=0;i<N;i++){
-      var phi=Math.acos(-1+(2*i)/N), theta=Math.sqrt(N*Math.PI)*phi, r=R+(Math.random()-0.5)*JIT;
-      pos[i*3]=r*Math.cos(theta)*Math.sin(phi); pos[i*3+1]=r*Math.cos(phi); pos[i*3+2]=r*Math.sin(theta)*Math.sin(phi);
+      var v=new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1);
+      if(v.length()>1) v.normalize().multiplyScalar(0.35+Math.random()*0.65);
+      v.multiplyScalar(R);
+      var vel=new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1).multiplyScalar(0.014);
+      var red=Math.random()<0.15;
+      nodes.push({pos:v,vel:vel,red:red});
+      posArr[i*3]=v.x; posArr[i*3+1]=v.y; posArr[i*3+2]=v.z;
+      colArr[i*3]=1; colArr[i*3+1]=red?0.14:1; colArr[i*3+2]=red?0.02:1;
     }
-    var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    group.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.07,sizeAttenuation:true,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:true})));
+    var pg=new THREE.BufferGeometry();
+    pg.setAttribute('position',new THREE.BufferAttribute(posArr,3));
+    pg.setAttribute('color',new THREE.BufferAttribute(colArr,3));
+    group.add(new THREE.Points(pg,new THREE.PointsMaterial({size:mobile?0.42:0.34,sizeAttenuation:true,
+      vertexColors:true,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false})));
 
-    /* orbiting product panels facing outward */
-    var labels=['STAY','KOOGY','VISION','COMPTA','OPS'], M=mobile?6:10, IR=9, IW=1.7, IH=2.1;
-    for(var j=0;j<M;j++){
-      var a=(j/M)*Math.PI*2, px=IR*Math.cos(a), pz=IR*Math.sin(a), p=new THREE.Vector3(px,0,pz);
-      var mesh=new THREE.Mesh(new THREE.PlaneGeometry(IW,IH),
-        new THREE.MeshBasicMaterial({map:labelTexture(labels[j%labels.length]),transparent:true,side:THREE.DoubleSide}));
-      mesh.position.copy(p); mesh.lookAt(p.clone().multiplyScalar(2)); group.add(mesh);
+    /* line segments between nearby nodes — form + break as the graph drifts (rewiring) */
+    var MAXP=N*10, linePos=new Float32Array(MAXP*2*3), lineCol=new Float32Array(MAXP*2*3);
+    var lg=new THREE.BufferGeometry();
+    lg.setAttribute('position',new THREE.BufferAttribute(linePos,3));
+    lg.setAttribute('color',new THREE.BufferAttribute(lineCol,3));
+    group.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,
+      opacity:0.62,blending:THREE.AdditiveBlending,depthWrite:false})));
+    var THRESH=4.6, TH2=THRESH*THRESH;
+    function updateGraph(){
+      var lp=lg.attributes.position.array, lc=lg.attributes.color.array, count=0;
+      for(var a=0;a<N;a++){ var na=nodes[a];
+        for(var b=a+1;b<N;b++){ var nb=nodes[b];
+          var dx=na.pos.x-nb.pos.x, dy=na.pos.y-nb.pos.y, dz=na.pos.z-nb.pos.z;
+          var d2=dx*dx+dy*dy+dz*dz;
+          if(d2<TH2){
+            if(count>=MAXP){a=N;break;}
+            var al=(1-Math.sqrt(d2)/THRESH)*0.9, red=na.red||nb.red, o=count*6;
+            lp[o]=na.pos.x;lp[o+1]=na.pos.y;lp[o+2]=na.pos.z;
+            lp[o+3]=nb.pos.x;lp[o+4]=nb.pos.y;lp[o+5]=nb.pos.z;
+            var cg=red?0.16:1, cb=red?0.03:1;
+            lc[o]=al; lc[o+1]=cg*al; lc[o+2]=cb*al;
+            lc[o+3]=al; lc[o+4]=cg*al; lc[o+5]=cb*al;
+            count++;
+          }
+        }
+      }
+      lg.setDrawRange(0,count*2);
+      lg.attributes.position.needsUpdate=true; lg.attributes.color.needsUpdate=true;
     }
 
     var rm=matchMedia('(prefers-reduced-motion: reduce)').matches, fine=matchMedia('(hover:hover)').matches;
-    var tx=0,ty=0,cx=0,cy=0,baseY=0;
+    var tx=0,ty=0,cx=0,cy=0,baseY=0,frame=0,RB=R*1.2;
     var sec=document.querySelector('.ccap-section');
     if(sec&&fine) sec.addEventListener('mousemove',function(e){ ty=(e.clientX/innerWidth-.5)*0.8; tx=(e.clientY/innerHeight-.5)*0.5; });
     function size(){ var w=holder.clientWidth||innerWidth||0,h=holder.clientHeight||innerHeight||0;
-      if(w<2||h<2){ setTimeout(size,400); return; }   /* self-heal: WebViews report 0×0 at boot */
+      if(w<2||h<2){ setTimeout(size,400); return; }
       renderer.setSize(w,h); cam.aspect=w/h; cam.updateProjectionMatrix(); }
     size(); addEventListener('resize',size); setInterval(size,1500);
-    window.__koogRender=function(){ try{renderer.render(scene,cam)}catch(e){} };
+    window.__koogRender=function(){ try{updateGraph();renderer.render(scene,cam)}catch(e){} };
     (function loop(){
       requestAnimationFrame(loop);
       if(document.hidden)return;
       var r=holder.getBoundingClientRect();
-      if(r.bottom<-40||r.top>innerHeight+40)return;   /* off-screen: no GPU work while scrolling elsewhere */
-      if(!rm) baseY+=0.0015;
+      if(r.bottom<-40||r.top>innerHeight+40)return;
+      if(!rm){
+        for(var i=0;i<N;i++){ var n=nodes[i];
+          n.pos.x+=n.vel.x; n.pos.y+=n.vel.y; n.pos.z+=n.vel.z;
+          if(n.pos.length()>RB){ n.vel.multiplyScalar(-1); n.pos.x+=n.vel.x; n.pos.y+=n.vel.y; n.pos.z+=n.vel.z; }
+          var o=i*3; posArr[o]=n.pos.x; posArr[o+1]=n.pos.y; posArr[o+2]=n.pos.z;
+        }
+        pg.attributes.position.needsUpdate=true;
+      }
+      if((frame++%2)===0) updateGraph();   /* graph rebuild every other frame — plenty smooth, half the cost */
+      if(!rm) baseY+=0.0012;
       cy+=(ty-cy)*0.05; cx+=(tx-cx)*0.05;
-      group.rotation.y=baseY+cy; group.rotation.x=0.32+cx;   /* constant tilt so the 3D form reads as it turns */
+      group.rotation.y=baseY+cy; group.rotation.x=0.12+cx;
       try{renderer.render(scene,cam)}catch(e){}
     })();
   }

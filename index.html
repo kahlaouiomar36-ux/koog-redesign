@@ -245,6 +245,7 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
 /* statement (v3) + scribble underline (v2) */
 .statement p.big{font-size:clamp(1.6rem,3.6vw,2.8rem);line-height:1.22;font-weight:500;max-width:30ch;letter-spacing:-.01em}
 .statement p.big b{color:var(--muted);font-weight:500}
+.statement .kwrd{color:var(--red)}
 .statement .every{position:relative;white-space:nowrap}
 .statement .every .sdot{color:var(--red)}
 .statement .every svg{position:absolute;left:-2%;bottom:-9px;width:104%;height:14px;overflow:visible}
@@ -1103,7 +1104,10 @@ section{padding:clamp(90px,14vh,160px) var(--pad);position:relative}
         var frag=document.createDocumentFragment();
         n.textContent.split(/(\s+)/).forEach(function(w){
           if(/^\s+$/.test(w)||w===''){frag.appendChild(document.createTextNode(w));return}
-          var s=document.createElement('span');s.className='w';s.textContent=w;frag.appendChild(s);
+          var s=document.createElement('span');s.className='w';s.textContent=w;
+          var norm=w.toLowerCase().replace(/[.,!?;:"']/g,'');
+          if(['builds','automates','grows','building'].indexOf(norm)>=0)s.classList.add('kwrd'); /* KOOG verbs bloom red */
+          frag.appendChild(s);
         });
         big.replaceChild(frag,n);
       }else if(n.nodeType===1){n.classList.add('w')}
